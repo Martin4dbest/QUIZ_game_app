@@ -16,7 +16,7 @@ from tkinter import Tk, Entry, Label, Button, messagebox
 from tkinter import PhotoImage
 
 
-
+#create database
 def create_database():
     conn = sqlite3.connect("users.db")
     c = conn.cursor()
