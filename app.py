@@ -17,13 +17,31 @@ from tkinter import PhotoImage
 
 
 #create database
+
+
 def create_database():
     conn = sqlite3.connect("users.db")
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS users
-                 (username TEXT PRIMARY KEY, password TEXT)''')
+                 (username TEXT PRIMARY KEY, password TEXT, scores INTEGER, amount_won REAL)''')
     conn.commit()
     conn.close()
+
+def update_scores(username, new_score):
+    conn = sqlite3.connect("users.db")
+    c = conn.cursor()
+    c.execute("UPDATE users SET scores = ? WHERE username = ?", (new_score, username))
+    conn.commit()
+    conn.close()
+
+def update_amount_won(username, amount):
+    conn = sqlite3.connect("users.db")
+    c = conn.cursor()
+    c.execute("UPDATE users SET amount_won = ? WHERE username = ?", (amount, username))
+    conn.commit()
+    conn.close()
+
+    
 
 def register_user(username, password):
     conn = sqlite3.connect("users.db")
