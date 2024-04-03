@@ -780,6 +780,37 @@ def main_game(category):
     optionButton4.bind('<Button-1>', select)
     
 
+    """
+    def exit_game():
+        if messagebox.askokcancel("Exit", "Are you sure you want to exit the game?"):
+            # Add any necessary cleanup code here
+            # For example: stop music, close files, etc.
+            # Then destroy the root window
+            root.destroy()
+            # Optionally, you can also return to the category selection window
+            show_category_selection()
+"""
+    def exit_game():
+        if messagebox.askokcancel("Exit", "Are you sure you want to exit the game?"):
+            # Add any necessary cleanup code here
+            # For example: stop music, close files, etc.
+            # Then destroy the root window
+            mixer.music.stop()
+            root.destroy()
+            # Optionally, you can also return to the category selection window
+            show_category_selection()
+
+
+    # Set the default style to have a red background
+    root.style = ttk.Style()
+    root.style.configure(".", background="red", foreground="black")
+
+    # Create the exit button with the default style
+    exit_button = ttk.Button(root, text="Exit", command=exit_game)
+    exit_button.grid(row=0, column=1, sticky="ne")  # Grid the button to the top right corner
+
+
+
 
 
     root.mainloop()
