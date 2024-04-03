@@ -88,6 +88,22 @@ def register():
     else:
         messagebox.showerror("Error", "Failed to register user.")
 
+category_window = None  
+def logout():
+    global category_window
+    if category_window:
+        category_window.destroy()  # Destroy the category selection window
+    create_login_window()  # Show the login window again
+
+
+def exit_game():
+    global category_window
+    category_window.destroy()
+
+
+
+
+
 def login():
     username = username_entry.get()
     password = password_entry.get()
@@ -113,23 +129,44 @@ def show_password():
 
 
 def show_category_selection():
+    global category_window
     category_window = tk.Tk()
     category_window.title("Category Selection")
     category_window.geometry("1430x1430")
+    category_window.configure(bg="blue")
 
     img = tk.PhotoImage(file="logo90.png")
     img_label = tk.Label(category_window, image=img)
     img_label.pack()
 
-    categories = ["GENERAL KNOWLEDGE", "GEOGRAPHY", "HISTORY", "LITERATURE", "MUSIC", "POP CULTURE", "SPORT"]
+    categories = ["GENERAL KNOWLEDGE", "GEOGRAPHY", "HISTORY", "LITERATURE", "MUSIC", "POP CULTURE", "SPORT", "COMPUTER SCIENCE", "RIDDLES", "SCIENCE AND TECHNOLOGY"]
 
     def start_game_with_category(category):
-        category_window.destroy()  
+        global category_window
+        category_window.destroy() 
+        main_game(category) 
+      
      
+    
+    #for category in categories:
+        #button = ttk.Button(category_window, text=category, command=lambda cat=category: start_game_with_category(cat))
+        #button.pack(pady=5)
+
+    category_frame = ttk.Frame(category_window)
+    category_frame.pack()
 
     for category in categories:
-        button = ttk.Button(category_window, text=category, command=lambda cat=category: start_game_with_category(cat))
-        button.pack(pady=5)
+        button = ttk.Button(category_frame, text=category, command=lambda cat=category: start_game_with_category(cat))
+        button.pack(side=tk.LEFT, padx=5, pady=5)
+
+    logout_button = ttk.Button(category_window, text="Logout", command=logout)
+    logout_button.pack(pady=5)
+
+    exit_button = ttk.Button(category_window, text="Exit", command=exit_game)
+    exit_button.pack(pady=5)
+
+
+
 
     category_window.mainloop()
 
@@ -266,6 +303,8 @@ def main_game(category):
     mixer.init()
     mixer.music.load("kbc.mp3")
     mixer.music.play(-1)
+
+    
 
 
     def select(event):
@@ -740,18 +779,15 @@ def main_game(category):
     optionButton3.bind('<Button-1>', select)
     optionButton4.bind('<Button-1>', select)
     
-    # Call the start function to initiate each game function
 
-    
+
+
     root.mainloop()
-
-
-  
 
 
 create_login_window()
 
 
-main_game("GENERAL KNOWLEDGE")
+#main_game("GENERAL KNOWLEDGE")
 
 
