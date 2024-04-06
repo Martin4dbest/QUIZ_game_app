@@ -16,8 +16,19 @@ from tkinter import Tk, Entry, Label, Button, messagebox
 from tkinter import PhotoImage
 
 
-#create database
 
+
+# Define global variables for questions and options
+question = []
+First_options = []
+Second_options = []
+Third_options = []
+Fourth_options = []
+correct_answers = []
+lifelines = []
+
+
+#create database
 def create_database():
     conn = sqlite3.connect("users.db")
     c = conn.cursor()
@@ -125,7 +136,7 @@ def show_password():
     else:
         password_entry.config(show="*")
 
-"""
+
 
 def show_category_selection():
     global category_window
@@ -139,84 +150,44 @@ def show_category_selection():
     img_label.pack()
 
     categories = ["GENERAL KNOWLEDGE", "GEOGRAPHY", "HISTORY", "LITERATURE", "MUSIC", "POP CULTURE", "SPORT", "COMPUTER SCIENCE", "RIDDLES", "SCIENCE AND TECHNOLOGY"]
-    
+
     def start_game_with_category(category):
         global category_window
         category_window.destroy() 
-        #main_game(category) 
-        main_game(category, question, options[0], options[1], options[2], options[3], correct_answers)   
+        #correct_answers, question, options = main_game(category)
+        main_game(category)
+        #start_game_with_category("General Knowledge") 
+        
+     
+
     
-    #for category in categories:
-        #button = ttk.Button(category_window, text=category, command=lambda cat=category: start_game_with_category(cat))
-        #button.pack(pady=5)
 
     category_frame = ttk.Frame(category_window)
     category_frame.pack()
+    
+
+
 
     for category in categories:
         button = ttk.Button(category_frame, text=category, command=lambda cat=category: start_game_with_category(cat))
-        button.pack(side=tk.LEFT, padx=5, pady=5)
 
-    logout_button = ttk.Button(category_window, text="Logout", command=logout)
-    logout_button.pack(pady=5)
-
-    exit_button = ttk.Button(category_window, text="Exit", command=exit_game)
-    exit_button.pack(pady=5)
-
-
-
-
-    category_window.mainloop()
-
-"""
-def show_category_selection():
-    global category_window
-    category_window = tk.Tk()
-    category_window.title("Category Selection")
-    category_window.geometry("1430x1430")
-    category_window.configure(bg="blue")
-
-    img = tk.PhotoImage(file="logo90.png")
-    img_label = tk.Label(category_window, image=img)
-    img_label.pack()
-
-    categories = ["GENERAL KNOWLEDGE", "GEOGRAPHY", "HISTORY", "LITERATURE", "MUSIC", "POP CULTURE", "SPORT", "COMPUTER SCIENCE", "RIDDLES", "SCIENCE AND TECHNOLOGY"]
-
-    
-    def start_game_with_category(category):
-        global category_window
-        category_window.destroy()
-        category_lower = category.lower()  # Convert category to lowercase for case-insensitive comparison 
-        if category_lower == "general knowledge":
-            correct_answers, question, options = load_general_knowledge_questions()
-            main_game(category, question, options[0], options[1], options[2], options[3], correct_answers)
-        elif category_lower == "geography":
-            correct_answers, question, options = load_geography_questions()
-            main_game(category, question, options[0], options[1], options[2], options[3], correct_answers)
-        else:
-            print("Invalid category. Please choose a valid category.")
+        button.pack(side=tk.LEFT, padx=5, pady=5, ipadx=10, ipady=5)  # Adjust internal padding
        
 
-
-    category_frame = ttk.Frame(category_window)
-    category_frame.pack()
-
-    for category in categories:
-        button = ttk.Button(category_frame, text=category, command=lambda cat=category: start_game_with_category(cat))
-        button.pack(side=tk.LEFT, padx=5, pady=5)
-
+        # Create logout button
     logout_button = ttk.Button(category_window, text="Logout", command=logout)
-    logout_button.pack(pady=5)
+    logout_button.pack(pady=(20, 5))  # Adjust vertical padding with tuple (top, bottom)
 
+        # Create exit button
     exit_button = ttk.Button(category_window, text="Exit", command=exit_game)
-    exit_button.pack(pady=5)
+    exit_button.pack(pady=(5, 20))  # Adjust
+    
+
+ 
+
+
 
     category_window.mainloop()
-    #main_game(category, question, options[0], options[1], options[2], options[3], correct_answers)
-
-
-
-
 
 
 """
@@ -340,9 +311,8 @@ def create_login_window():
 
     root.mainloop()
 
-#category_window.mainloop()
 
-def main_game(category, question, First_options, Second_options, Third_options, Fourth_options, correct_answers):
+def main_game(category):
     # Initialize pyttsx3 engine
     engine = pyttsx3.init()
     voices = engine.getProperty('voices')
@@ -353,105 +323,15 @@ def main_game(category, question, First_options, Second_options, Third_options, 
     mixer.music.load("kbc.mp3")
     mixer.music.play(-1)
 
-# Rest of the code...
+
+
+    
 
 
 
 
-    # Shuffle the questions, options, and correct answers together
-    questions_and_options = list(zip(question, First_options, Second_options, Third_options, Fourth_options, correct_answers))
-    random.shuffle(questions_and_options)
 
-    # Unpack the shuffled values
-    question, First_options, Second_options, Third_options, Fourth_options, correct_answers = zip(*questions_and_options)       
-
-    question, First_options, Second_options, Third_options, Fourth_options, correct_answers = zip(*questions_and_options)
-
-def load_general_knowledge_questions():
-    correct_answers = [
-        "Tokyo", "Canberra", "Mars", "Shakespeare", "Pacific Ocean",
-        "1776", "Vincent van Gogh", "Yen", "Nitrogen",
-        "Albert Einstein", "Japan", "Blue whale",
-        "Helium", "Harper Lee", "Ottawa"
-        ]
-    question = [
-        "What is the capital of Japan?",
-        "What is the capital city of Australia?",
-        "Which planet is known as the Red Planet?",
-        "Who wrote 'Romeo and Juliet'?",
-        "What is the largest ocean on Earth?",
-        "In what year did the United States declare its independence?",
-        "Who painted the famous artwork \"Starry Night\"?",
-        "What is the currency of Japan?",
-        "Which gas makes up the majority of Earth's atmosphere?",
-        "Who is known as the \"Father of Modern Physics\"?",
-        "Which country is known as the \"Land of the Rising Sun\"?",
-        "What is the largest mammal in the world?",
-        "Which of the following elements is a noble gas?",
-        "Who wrote the famous novel \"To Kill a Mockingbird\"?",
-        "What is the capital city of Canada?"
-        ]
-    options = [
-        ["Seoul", "Beijing", "Tokyo", "Bangkok"],
-        ["Sydney", "Melbourne", "Canberra", "Brisbane"],
-        ["Venus", "Mars", "Jupiter", "Saturn"],
-        ["Shakespeare", "Jane Austen", "Charles Dickens", "Emily Brontë"],
-        ["Atlantic Ocean", "Indian Ocean", "Pacific Ocean", "Southern Ocean"],
-        ["1776", "1789", "1800", "1865"],
-        ["Pablo Picasso", "Vincent van Gogh", "Leonardo da Vinci", "Claude Monet"],
-        ["Won", "Yen", "Baht", "Ringgit"],
-        ["Oxygen", "Carbon dioxide", "Nitrogen", "Hydrogen"],
-        ["Isaac Newton", "Albert Einstein", "Galileo Galilei", "Nikola Tesla"],
-        ["China", "Japan", "South Korea", "Vietnam"],
-        ["Elephant", "Blue whale", "Giraffe", "Gorilla"],
-        ["Oxygen", "Helium", "Sodium", "Carbon"],
-        ["J.K. Rowling", "Harper Lee", "Ernest Hemingway", "Scott Fitzgerald"],
-        ["Vancouver", "Toronto", "Ottawa", "Montreal"]
-        ]
-    return correct_answers, question, options
-
-def load_geography_questions():
-    correct_answers = [
-        "Canberra", "Russia", "Nile", "Russia", "Canada",
-        "Mount Everest", "Tokyo", "France", "Arctic Ocean",
-        "India", "Antarctica", "China", "Pacific Ocean",
-        "Mexico", "Africa"
-        ]
-    question = [
-            "What is the capital city of Australia?",
-            "Which country is the largest by land area?",
-            "What is the longest river in the world?",
-            "Which country spans across Europe and Asia?",
-            "Which is the second largest country by land area?",
-            "Which is the highest mountain peak on Earth?",
-            "What is the capital city of Japan?",
-            "Which country is famous for the Eiffel Tower?",
-            "Which ocean is the smallest and shallowest?",
-            "Which country is known for the Taj Mahal?",
-            "Which continent is entirely located in the Southern Hemisphere?",
-            "Which country has the largest population?",
-            "Which ocean is the largest and deepest?",
-            "Which country is known for the ancient ruins of Chichen Itza?",
-            "Which continent is known as the 'Dark Continent'?"
-        ]
-    options = [
-            ["Sydney", "Melbourne", "Canberra", "Perth"],
-            ["Australia", "Russia", "Brazil", "India"],
-            ["Amazon", "Mississippi", "Nile", "Ganges"],
-            ["United States", "China", "Canada", "Russia"],
-            ["Russia", "China", "USA", "India"],
-            ["K2", "Kangchenjunga", "Mount Everest", "Mont Blanc"],
-            ["Beijing", "Osaka", "Seoul", "Tokyo"],
-            ["Italy", "Germany", "UK", "France"],
-            ["Indian Ocean", "Southern Ocean", "Arctic Ocean", "Atlantic Ocean"],
-            ["Brazil", "China", "Japan", "Australia"],
-            ["Asia", "Australia", "Europe", "Antarctica"],
-            ["India", "Brazil", "USA", "China"],
-            ["Atlantic Ocean", "Indian Ocean", "Pacific Ocean", "Southern Ocean"],
-            ["USA", "Spain", "Canada", "Mexico"],
-            ["Asia", "Europe", "South America", "Australia"]
-        ]
-    return correct_answers, question, options
+    
 
     def select(event):
         callButtton.place_forget()
@@ -465,7 +345,6 @@ def load_geography_questions():
         progressbarLabelB.place_forget()
         progressbarLabelC.place_forget()
         progressbarLabelD.place_forget()
-
         b=event.widget
         value=b["text"]
 
@@ -475,7 +354,6 @@ def load_geography_questions():
                     def close():
                         root2.destroy()
                         root.destroy()
-
                     def playagain():
                         lifeline50Button.config(state=NORMAL,image=image50)
                         audiencePoleButton.config(state=NORMAL,image=audiencePole)
@@ -489,7 +367,8 @@ def load_geography_questions():
                         optionButton4.config(text=Fourth_options[0])
                         amountLabel.config(image=amountImages)
 
-                    
+                # load_new_questions()
+
                     mixer.music.stop()
                     mixer.music.load("kbcwon.mp3")
                     mixer.music.play()
@@ -518,20 +397,19 @@ def load_geography_questions():
                     happyLabel1.place(x=400,y=280)
 
 
-
                     root2.mainloop()
                     break
-                                
 
-                questionArea.delete(1.0, END)
-                questionArea.insert(END, question[i + 1])
-                optionButton1.config(text=options[i + 1][0])
-                optionButton2.config(text=options[i + 1][1])
-                optionButton3.config(text=options[i + 1][2])
-                optionButton4.config(text=options[i + 1][3])
+                questionArea.delete(1.0,END)
+                questionArea.insert(END,question[i+1])
+                optionButton1.config(text=First_options[i+1])
+                optionButton2.config(text=Second_options[i+1])
+                optionButton3.config(text=Third_options[i+1])
+                optionButton4.config(text=Fourth_options[i+1])
                 amountLabel.configure(image=amountImages[i])
                 amountLabel.image = amountImages[i]
-              
+
+
             if value not in correct_answers:
                 def close():
                     root1.destroy()
@@ -573,7 +451,6 @@ def load_geography_questions():
                 sadLabel1.place(x=400,y=280)
                 root1.mainloop()
                 break
-
     def lifeline50():
         lifeline50Button.config(image=image50X,state=DISABLED)
         if questionArea.get(1.0,"end-1c")==question[0]:
@@ -621,7 +498,6 @@ def load_geography_questions():
         if questionArea.get(1.0,"end-1c")==question[14]:
            optionButton2.config(text="")
            optionButton4.config(text="")
-    
     def audiencePoleLifeLine():
         audiencePoleButton.config(image=audiencePoleX, state=DISABLED)
         progressBarA.place(x=580, y=190)
@@ -709,6 +585,7 @@ def load_geography_questions():
            progressBarB.config(value=40)
            progressBarC.config(value=70)
            progressBarD.config(value=50)
+
     def phoneLifeLine():
         mixer.music.load("calling.mp3")
         mixer.music.play()
@@ -723,6 +600,1106 @@ def load_geography_questions():
               mixer.init()
               mixer.music.load("kbc.mp3")
               mixer.music.play(-1)
+
+    
+
+
+
+
+
+    if category == "GENERAL KNOWLEDGE":
+        correct_answers = [
+        "Tokyo","Canberra", "Mars","Shakespeare","Pacific Ocean",
+        "1776", "Vincent van Gogh", "Yen", "Nitrogen",
+        "Albert Einstein", "Japan", "Blue whale",
+        "Helium", "Harper Lee", "Ottawa"]
+
+        question=["What is the capital of Japan?",
+            "What is the capital city of Australia?",
+            "Which planet is known as the Red Planet?",
+            "Who wrote 'Romeo and Juliet?",
+            "What is the largest ocean on Earth?",
+            "In what year did the United States declare its independence?",
+            "Who painted the famous artwork \"Starry Night\"?",
+            "What is the currency of Japan?",
+            "Which gas makes up the majority of Earth's atmosphere?",
+            "Who is known as the \"Father of Modern Physics\"?",
+            "Which country is known as the \"Land of the Rising Sun\"?",
+            "What is the largest mammal in the world?",
+            "Which of the following elements is a noble gas?",
+            "Who wrote the famous novel \"To Kill a Mockingbird\"?",
+            "What is the capital city of Canada?"]
+
+        First_options = [
+            "Seoul",
+            "Sydney",
+            "Venus",
+            "Shakespeare",
+            "Atlantic Ocean",
+            "1776",
+            "Pablo Picasso",
+            "Won",
+            "Oxygen",
+            "Isaac Newton",
+            "China",
+            "Elephant",
+            "Oxygen",
+            "J.K. Rowling",
+            "Vancouver"
+        ]
+        Second_options = [
+        "Beijing","Melbourne", "Mars", "Jane Aust", "Indian Ocean",
+        "1789", "Vincent van Gogh", "Yen", "Carbon dioxide",
+        "Albert Einstein", "South Korea", "Blue whale",
+        "Helium", "Harper Lee", "Toronto"
+        ]
+
+        Third_options = [
+        "Tokyo","Canberra", "Jupiter", "C.Dickens","Southern Ocean",
+        "1800", "Leonardo Vinci", "Baht", "Nitrogen",
+        "Galilei", "Japan", "Giraffe",
+        "Sodium", "Ernest Hemingway", "Ottawa"
+        ]
+
+        Fourth_options = [
+        "BangKok","Brisbane", "Saturn","Emily Brontë", "Pacific Ocean",
+        "1865", "Claude Monet", "Ringgit", "Hydrogen",
+        "Nikola Tesla", "Vietnam","Gorilla",
+        "Carbon", "Scott gerald", "Montreal"
+        ]
+        
+    
+    #GEOGRAPHY 
+
+    elif category == "GEOGRAPHY": 
+          correct_answers = [
+            "Canberra",
+            "Brazil",
+            "Nile",
+            "Russia",
+            "Canada",
+            "Mount Everest",
+            "Tokyo",
+            "France",
+            "Arctic Ocean",
+            "India",
+            "Antarctica",
+            "China",
+            "Pacific Ocean",
+            "Mexico",
+            "Africa"
+            ]
+          question = [
+                "What is the capital city of Australia?",
+                "Which country is the largest by land area?",
+                "What is the longest river in the world?",
+                "Which country spans across Europe and Asia?",
+                "Which is the second largest country by land area?",
+                "Which is the highest mountain peak on Earth?",
+                "What is the capital city of Japan?",
+                "Which country is famous for the Eiffel Tower?",
+                "Which ocean is the smallest and shallowest?",
+                "Which country is known for the Taj Mahal?",
+                "Which continent is entirely located in the Southern Hemisphere?",
+                "Which country has the largest population?",
+                "Which ocean is the largest and deepest?",
+                "Which country is known for the ancient ruins of Chichen Itza?",
+                "Which continent is known as the 'Dark Continent'?"
+            ]
+
+          First_options = [
+                "Sydney",
+                "Australia",
+                "Amazon",
+                "United States",
+                "Russia",
+                "K2",
+                "Beijing",
+                "Italy",
+                "Indian Ocean",
+                "Brazil",
+                "Asia",
+                "India",
+                "Atlantic Ocean",
+                "USA",
+                "Asia"
+            ]
+
+          Second_options = [
+                "Melbourne",
+                "India",
+                "Mississippi",
+                "China",
+                "China",
+                "Kangchenjunga",
+                "Osaka",
+                "Germany",
+                "Southern Ocean",
+                "India",
+                "Australia",
+                "Brazil",
+                "Indian Ocean",
+                "Spain",
+                "Europe"
+            ]
+
+          Third_options = [
+                "Canberra",
+                "Brazil",
+                "Nile",
+                "Canada",
+                "USA",
+                "Mount Everest",
+                "Seoul",
+                "UK",
+                "Arctic Ocean",
+                "Japan",
+                "Europe",
+                "USA",
+                "Pacific Ocean",
+                "Canada",
+                "South America"
+            ]
+
+          Fourth_options = [
+                "Perth",
+                "Australia",
+                "Ganges",
+                "Russia",
+                "India",
+                "Mont Blanc",
+                "Tokyo",
+                "France",
+                "Atlantic Ocean",
+                "Australia",
+                "Antarctica",
+                "China",
+                "Southern Ocean",
+                "Mexico",
+                "Australia"
+   
+            ]
+
+        #HISTORY 
+    elif category == "HISTORY":
+          correct_answers = [
+                    "1776",
+                    "Julius Caesar",
+                    "Marie Curie",
+                    "World War II",
+                    "Industrial Revolution",
+                    "Magna Carta",
+                    "Nelson Mandela",
+                    "Vietnam War",
+                    "Russia",
+                    "Napoleon Bonaparte",
+                    "Great Depression",
+                    "Cleopatra",
+                    "Renaissance",
+                    "Winston Churchill",
+                    "Silk Road"
+        ]
+
+          question = [
+            "In what year did the United States declare its independence?",
+            "Who was the first Roman Emperor?",
+            "Who was the first woman to win a Nobel Prize?",
+            "During which conflict was the Battle of Stalingrad fought?",
+            "Which period saw major advancements in manufacturing, transportation, and technology?",
+            "What was the name of the document signed by King John of England in 1215?",
+            "Who was the first black President of South Africa?",
+            "Which war ended with the fall of Saigon in 1975?",
+            "The Bolshevik Revolution of 1917 took place in which country?",
+            "Who famously said, 'A soldier will fight long and hard for a bit of colored ribbon'?",
+            "What was the name given to the period of severe economic downturn in the 1930s?",
+            "Who was the last active pharaoh of ancient Egypt?",
+            "Which period in European history is known for its revival of art, literature, and learning?",
+            "Who was the British Prime Minister during World War II?",
+            "What ancient network of trade routes connected the East and West?"
+        ]
+
+          First_options = [
+            "1789",
+            "Julius Caesar",
+            "Margaret Thatcher",
+            "World War I",
+            "Industrial Revolution",
+            "Treaty of Versailles",
+            "Martin Luther King Jr.",
+            "Korean War",
+            "Germany",
+            "Napoleon Bonaparte",
+            "World War I",
+            "Hatshepsut",
+            "Middle Ages",
+            "Franklin D. Roosevelt",
+            "Spice Route"
+        ]
+
+          Second_options = [
+            "1776",
+            "Augustus",
+            "Rosa Parks",
+            "World War II",
+            "Victorian Era",
+            "Magna Carta",
+            "Malcolm X",
+            "Gulf War",
+            "Russia",
+            "Winston Churchill",
+            "Great Depression",
+            "Cleopatra",
+            "Renaissance",
+            "Neville Chamberlain",
+            "Trans-Saharan Route"
+        ]
+
+          Third_options = [
+            "1800",
+            "Nero",
+            "Marie Curie",
+            "Cold War",
+            "Renaissance",
+            "Declaration of Independence",
+            "Nelson Mandela",
+            "Afghanistan War",
+            "France",
+            "Joseph Stalin",
+            "Cold War",
+            "Nefertiti",
+            "Enlightenment",
+            "Margaret Thatcher",
+            "Silk Road"
+        ]
+
+          Fourth_options = [
+            "1865",
+            "Claudius",
+            "Florence Nightingale",
+            "Vietnam War",
+            "Enlightenment",
+            "Emancipation Proclamation",
+            "Barack Obama",
+            "Vietnam War",
+            "China",
+            "Otto von Bismarck",
+            "Dust Bowl",
+            "Queen Elizabeth I",
+            "Industrial Revolution",
+            "Winston Churchill",
+            "Marco Polo Route"
+        ]
+
+    
+
+            #LITERATURE
+
+    
+    elif category == "LITERATURE":
+          correct_answers = [
+            "William Shakespeare",
+            "Charles Dickens",
+            "Leo Tolstoy",
+            "J.K. Rowling",
+            "Herman Melville",
+            "Romeo and Juliet",
+            "George Orwell",
+            "Harper Lee",
+            "Agatha Christie",
+            "Hamlet",
+            "J.R.R. Tolkien",
+            "Mark Twain",
+            "George R.R. Martin",
+            "Jane Austen",
+            "Miguel de Cervantes"
+        ]
+
+          question = [
+            "Who is the author of 'Romeo and Juliet'?",
+            "Who wrote the novel 'Great Expectations'?",
+            "Who wrote 'War and Peace'?",
+            "Who is the author of the 'Harry Potter' series?",
+            "Who wrote 'Moby-Dick'?",
+            "Which play is known as 'The Tragedy of the Prince of Denmark'?",
+            "Who wrote '1984'?",
+            "Who authored 'To Kill a Mockingbird'?",
+            "Who created the fictional detective Hercule Poirot?",
+            "Which Shakespearean tragedy features the character Ophelia?",
+            "Who wrote 'The Lord of the Rings' trilogy?",
+            "Who wrote 'The Adventures of Huckleberry Finn'?",
+            "Who is the author of 'A Song of Ice and Fire' series?",
+            "Who wrote 'Pride and Prejudice'?",
+            "Who wrote 'Don Quixote'?"
+        ]
+
+          First_options = [
+            "William Wordsworth",
+            "Charles Dickens",
+            "Fyodor Dostoevsky",
+            "J.K. Rowling",
+            "Herman Melville",
+            "Macbeth",
+            "George Orwell",
+            "Harper Lee",
+            "Arthur Conan Doyle",
+            "King Lear",
+            "J.K. Rowling",
+            "Ernest Hemingway",
+            "J.R.R. Tolkien",
+            "Emily Brontë",
+            "Leo Tolstoy"
+        ]
+
+          Second_options = [
+            "George Orwell",
+            "George Eliot",
+            "Leo Tolstoy",
+            "Stephen King",
+            "Mark Twain",
+            "Romeo and Juliet",
+            "Aldous Huxley",
+            "Truman Capote",
+            "Agatha Christie",
+            "Hamlet",
+            "George R.R. Martin",
+            "F. Scott Fitzgerald",
+            "George R.R. Martin",
+            "Jane Austen",
+            "Miguel de Cervantes"
+        ]
+
+          Third_options = [
+            "John Milton",
+            "Jane Austen",
+            "Leo Tolstoy",
+            "J.R.R. Tolkien",
+            "Charles Dickens",
+            "Othello",
+            "J.R.R. Tolkien",
+            "J.D. Salinger",
+            "Raymond Chandler",
+            "Macbeth",
+            "J.R.R. Tolkien",
+            "Charles Dickens",
+            "J.K. Rowling",
+            "Charlotte Brontë",
+            "Fyodor Dostoevsky"
+        ]
+
+          Fourth_options = [
+            "William Shakespeare",
+            "Herman Melville",
+            "Fyodor Dostoevsky",
+            "Dan Brown",
+            "Ernest Hemingway",
+            "King Lear",
+            "George Orwell",
+            "Harper Lee",
+            "Sir Arthur Conan Doyle",
+            "Othello",
+            "Mark Twain",
+            "Mark Twain",
+            "J.K. Rowling",
+            "Jane Austen",
+            "Kodor Dostoe"
+        ]
+
+
+        #MUSIC
+    elif category == "MUSIC":
+          correct_answers = [
+            "Michael Jackson",
+            "Mozart",
+            "The Beatles",
+            "Elvis Presley",
+            "Adele",
+            "Led Zeppelin",
+            "Beethoven",
+            "Madonna",
+            "Bach",
+            "Queen",
+            "Johnny Cash",
+            "Taylor Swift",
+            "Pink Floyd",
+            "Stevie Wonder",
+            "Beyoncé"
+        ]
+
+          question = [
+            "Who is known as the 'King of Pop'?",
+            "Who composed 'The Magic Flute'?",
+            "Which band is often referred to as the 'Fab Four'?",
+            "Who is often referred to as the 'King of Rock and Roll'?",
+            "Which artist released the album '21'?",
+            "Which band released the iconic song 'Stairway to Heaven'?",
+            "Who composed 'Für Elise'?",
+            "Who is often referred to as the 'Queen of Pop'?",
+            "Which composer is known for composing 'Air on the G String'?",
+            "Which band sang 'Bohemian Rhapsody'?",
+            "Who is known as the 'Man in Black'?",
+            "Which artist released the album '1989'?",
+            "Which band released the album 'The Dark Side of the Moon'?",
+            "Who is often referred to as the 'Prince of Motown'?",
+            "Which artist released the album 'Lemonade'?"
+        ]
+
+          First_options = [
+            "Michael Jackson",
+            "Beethoven",
+            "The Rolling Stones",
+            "Elton John",
+            "Beyoncé",
+            "Pink Floyd",
+            "J.S. Bach",
+            "Madonna",
+            "Mozart",
+            "The Beatles",
+            "Johnny Cash",
+            "Adele",
+            "The Beatles",
+            "Stevie Wonder",
+            "Rihanna"
+        ]
+
+          Second_options = [
+            "Elvis Presley",
+            "Mozart",
+            "The Beatles",
+            "Bob Dylan",
+            "Taylor Swift",
+            "Led Zeppelin",
+            "Mozart",
+            "Lady Gaga",
+            "Beethoven",
+            "Led Zeppelin",
+            "Elvis Presley",
+            "Katy Perry",
+            "The Rolling Stones",
+            "Marvin Gaye",
+            "Britney Spears"
+        ]
+
+          Third_options = [
+            "Prince",
+            "Bach",
+            "The Beach Boys",
+            "Chuck Berry",
+            "Adele",
+            "The Eagles",
+            "Johann Strauss II",
+            "Whitney Houston",
+            "Chopin",
+            "The Rolling Stones",
+            "David Bowie",
+            "Ariana Grande",
+            "Pink Floyd",
+            "Ray Charles",
+            "Mariah Carey"
+        ]
+
+          Fourth_options = [
+            "Stevie Wonder",
+            "Beethoven",
+            "The Beatles",
+            "Elvis Presley",
+            "Mariah Carey",
+            "AC/DC",
+            "Frederic Chopin",
+            "Celine Dion",
+            "Brahms",
+            "Pink Floyd",
+            "Johnny Cash",
+            "Taylor Swift",
+            "Led Zeppelin",
+            "B.B. King",
+            "Beyoncé"
+        ]
+
+        #POP CULTURE
+    elif category == "POP CULTURE":
+          correct_answers = [
+            "Beyoncé",
+            "Leonardo DiCaprio",
+            "Taylor Swift",
+            "Kim Kardashian",
+            "Harry Potter",
+            "Stranger Things",
+            "Drake",
+            "Ariana Grande",
+            "Game of Thrones",
+            "Michael Jackson",
+            "Friends",
+            "Beyoncé and Jay-Z",
+            "BTS",
+            "Lady Gaga",
+            "Justin Bieber"
+        ]
+
+          question = [
+            "Who is known as the 'Queen B' of music?",
+            "Who won an Oscar for Best Actor for his role in 'The Revenant'?",
+            "Who is known as the 'Queen of Pop'?",
+            "Who became famous after a leaked tape with Ray J?",
+            "Which book series features a character named Hermione Granger?",
+            "Which TV series features a group of kids facing supernatural events in a small town called Hawkins?",
+            "Who released the album 'Scorpion' in 2018?",
+            "Which singer is known as the 'Princess of Pop'?",
+            "Which TV series is based on the book series 'A Song of Ice and Fire'?",
+            "Who is known as the 'King of Pop'?",
+            "Which TV series revolves around the lives of six friends living in New York City?",
+            "Which celebrity couple is often referred to as 'Bey-Z'?",
+            "Which K-pop group has members named RM, Jin, Suga, J-Hope, Jimin, V, and Jungkook?",
+            "Who performed the halftime show at the Super Bowl LI in 2017?",
+            "Who gained popularity after being discovered by talent manager Scooter Braun on YouTube?"
+        ]
+
+          First_options = [
+            "Adele",
+            "Johnny Depp",
+            "Rihanna",
+            "Paris Hilton",
+            "Twilight",
+            "The Crown",
+            "Kanye West",
+            "Britney Spears",
+            "Breaking Bad",
+            "Elvis Presley",
+            "How I Met Your Mother",
+            "Kanye West and Kim Kardashian",
+            "BLACKPINK",
+            "Madonna",
+            "Selena Gomez"
+        ]
+
+          Second_options = [
+            "Taylor Swift",
+            "Leonardo DiCaprio",
+            "Madonna",
+            "Kim Kardashian",
+            "The Hunger Games",
+            "Stranger Things",
+            "Drake",
+            "Lady Gaga",
+            "Stranger Things",
+            "Michael Jackson",
+            "The Office",
+            "Jay-Z and Rihanna",
+            "EXO",
+            "Rihanna",
+            "Justin Timberlake"
+        ]
+
+          Third_options = [
+            "Beyoncé",
+            "Tom Cruise",
+            "Beyoncé",
+            "Kylie Jenner",
+            "Harry Potter",
+            "Riverdale",
+            "Eminem",
+            "Katy Perry",
+            "The Witcher",
+            "Prince",
+            "Friends",
+            "Beyoncé and Jay-Z",
+            "NCT",
+            "Beyoncé",
+            "Shawn Mendes"
+        ]
+
+          Fourth_options = [
+            "Ariana Grande",
+            "Brad Pitt",
+            "Taylor Swift",
+            "Kendall Jenner",
+            "Game of Thrones",
+            "Gossip Girl",
+            "Justin Bieber",
+            "Ariana Grande",
+            "Game of Thrones",
+            "Justin Bieber",
+            "Glee",
+            "Selena Gomez and Justin Bieber",
+            "BTS",
+            "Katy Perry",
+            "Justin Bieber"
+        ]
+   
+        #SPORT
+    elif category == "SPORT" :
+          correct_answers = [
+            "Michael Jordan",
+            "Muhammad Ali",
+            "Cristiano Ronaldo",
+            "Serena Williams",
+            "Lionel Messi",
+            "Usain Bolt",
+            "Basketball",
+            "Novak Djokovic",
+            "Roger Federer",
+            "Michael Phelps",
+            "Simone Biles",
+            "Tiger Woods",
+            "Rafael Nadal",
+            "Tom Brady",
+            "Sachin Tendulkar"
+        ]
+
+          question = [
+            "Who is often considered the greatest basketball player of all time?",
+            "Who is known as 'The Greatest' in boxing?",
+            "Which footballer has won the most FIFA Ballon d'Or awards?",
+            "Who holds the record for the most Grand Slam singles titles in tennis?",
+            "Who has won the most FIFA Ballon d'Or awards in football?",
+            "Who holds the world record for the 100m sprint?",
+            "Which sport is associated with Wilt Chamberlain?",
+            "Who has won the most Australian Open titles in men's singles tennis?",
+            "Which tennis player has won the most Wimbledon titles?",
+            "Who holds the record for the most Olympic gold medals in swimming?",
+            "Who is often regarded as the greatest gymnast of all time?",
+            "Who is considered one of the greatest golfers of all time?",
+            "Who has won the most French Open titles in men's singles tennis?",
+            "Who is the quarterback with the most Super Bowl wins?",
+            "Who is often referred to as the 'God of Cricket'?"
+        ]
+
+          First_options = [
+            "Kobe Bryant",
+            "Mike Tyson",
+            "Lionel Messi",
+            "Venus Williams",
+            "Cristiano Ronaldo",
+            "Carl Lewis",
+            "Football",
+            "Rafael Nadal",
+            "Novak Djokovic",
+            "Mark Spitz",
+            "Nadia Comăneci",
+            "Jack Nicklaus",
+            "Andre Agassi",
+            "Peyton Manning",
+            "Virat Kohli"
+        ]
+
+          Second_options = [
+            "LeBron James",
+            "Floyd Mayweather Jr.",
+            "Cristiano Ronaldo",
+            "Serena Williams",
+            "Lionel Messi",
+            "Usain Bolt",
+            "Tennis",
+            "Andy Murray",
+            "Roger Federer",
+            "Michael Phelps",
+            "Simone Biles",
+            "Arnold Palmer",
+            "Roger Federer",
+            "Tom Brady",
+            "Sachin Tendulkar"
+        ]
+
+          Third_options = [
+            "Magic Johnson",
+            "Muhammad Ali",
+            "Neymar",
+            "Steffi Graf",
+            "Neymar",
+            "Asafa Powell",
+            "Golf",
+            "Stan Wawrinka",
+            "Rafael Nadal",
+            "Usain Bolt",
+            "Aly Raisman",
+            "Phil Mickelson",
+            "Rafael Nadal",
+            "Joe Montana",
+            "Ricky Ponting"
+        ]
+
+          Fourth_options = [
+            "Michael Jordan",
+            "Sugar Ray Robinson",
+            "Diego Maradona",
+            "Margaret Court",
+            "Diego Maradona",
+            "Michael Johnson",
+            "Basketball",
+            "Novak Djokovic",
+            "Pete Sampras",
+            "LeBron James",
+            "Nastia Liukin",
+            "Tiger Woods",
+            "Novak Djokovic",
+            "Tom Brady",
+            "Brian Lara"
+        ]
+
+        # COMPUTER SCIENCE 
+    elif category == "COMPUTER SCIENCE":
+          correct_answers = [
+            "To analyze algorithm complexity",
+            "A programming paradigm based on objects",
+            "TCP provides reliable data delivery, while UDP is connectionless and unreliable",
+            "To translate high-level code into machine code",
+            "To eliminate redundancy and improve data integrity",
+            "Symmetric encryption uses the same key for encryption and decryption",
+            "It allows the execution of programs larger than physical memory",
+            "A machine learning model inspired by the human brain",
+            "To reduce the size of data for storage or transmission",
+            "To store frequently accessed data for faster access",
+            "A stack follows Last In, First Out (LIFO) principle",
+            "Encourages code reusability and modularity",
+            "A linked list stores elements sequentially in memory",
+            "Recursion involves a function calling itself until a base case is reached",
+            "HTTP is unencrypted, while HTTPS encrypts data for secure transmission"
+        ]
+
+          question = [
+            "What is Big O notation used for in computer science?",
+            "Explain the concept of object-oriented programming.",
+            "What are the primary differences between TCP and UDP protocols?",
+            "Describe the role of a compiler in software development.",
+            "What is data normalization in databases and why is it important?",
+            "Differentiate between symmetric and asymmetric encryption algorithms.",
+            "Explain the concept of virtual memory in operating systems.",
+            "What is a neural network and how does it differ from traditional algorithms?",
+            "Describe the principles of data compression.",
+            "What is the purpose of a cache in computer architecture?",
+            "Differentiate between a stack and a queue in data structures.",
+            "What are the advantages and disadvantages of object-oriented programming?",
+            "Explain the difference between a linked list and an array.",
+            "How does recursion work in algorithm design?",
+            "Describe the role of HTTP and HTTPS in web communication."
+        ]
+
+          First_options = [
+            "To analyze algorithm complexity",
+            "A programming paradigm based on objects",
+            "TCP provides reliable data delivery, while UDP is connectionless and unreliable",
+            "To translate high-level code into machine code",
+            "To eliminate redundancy and improve data integrity",
+            "Symmetric encryption uses the same key for encryption and decryption",
+            "It allows the execution of programs larger than physical memory",
+            "A machine learning model inspired by the human brain",
+            "To reduce the size of data for storage or transmission",
+            "To store frequently accessed data for faster access",
+            "A stack follows Last In, First Out (LIFO) principle",
+            "Encourages code reusability and modularity",
+            "A linked list stores elements sequentially in memory",
+            "Recursion involves a function calling itself until a base case is reached",
+            "HTTP is unencrypted, while HTTPS encrypts data for secure transmission"
+        ]
+
+          Second_options = [
+            "To store large datasets efficiently",
+            "A programming paradigm based on functions",
+            "TCP is connectionless, while UDP provides reliable data delivery",
+            "To interpret code line by line during execution",
+            "To organize data in a hierarchical structure",
+            "Asymmetric encryption is faster than symmetric encryption",
+            "It allows multiple processes to share a single CPU",
+            "A search algorithm for finding optimal solutions",
+            "To increase the size of data for better analysis",
+            "To enhance the functionality of CPU registers",
+            "A queue follows First In, First Out (FIFO) principle",
+            "Encourages procedural programming",
+            "An array provides constant-time access to elements",
+            "Recursion involves dividing a problem into smaller subproblems",
+            "HTTP compresses data for faster transmission"
+        ]
+
+          Third_options = [
+            "To design user interfaces",
+            "A programming paradigm based on procedures",
+            "TCP guarantees packet delivery, while UDP doesn't guarantee",
+            "To manage hardware resources and provide services",
+            "To optimize database query performance",
+            "Symmetric encryption is more secure than asymmetric encryption",
+            "It increases the execution speed of programs",
+            "A sorting algorithm for arranging data alphabetically",
+            "To eliminate data redundancy for better storage efficiency",
+            "To facilitate parallel processing",
+            "Both have the same principles",
+            "Encourages functional programming",
+            "Both have the same characteristics",
+            "Recursion involves sorting elements sequentially",
+            "HTTP adds layers of security to data transmission"
+        ]
+
+          Fourth_options = [
+            "To measure the speed of data transmission",
+            "A programming paradigm based on events",
+            "TCP is faster than UDP",
+            "To debug code during development",
+            "To increase redundancy for data recovery",
+            "Asymmetric encryption is more secure than symmetric encryption",
+            "It simulates the behavior of a physical memory",
+            "A machine learning model for natural language processing",
+            "To improve data compression ratio",
+            "To allocate memory for program execution",
+            "None of the above",
+            "None of the above",
+            "None of the above",
+            "Recursion involves a function calling itself indefinitely",
+            "HTTPS slows down web communication"
+        ]
+
+            # RIDDLES
+
+    elif category == "RIDDLES":
+
+
+          correct_answers = [
+            "A piano",
+            "A candle",
+            "The letter 'm'",
+            "A coin",
+            "Footsteps",
+            "The piano",
+            "A stamp",
+            "A towel",
+            "Rain",
+            "Your name",
+            "A bottle",
+            "A leg",
+            "A clock",
+            "A joke",
+            "A map"
+    ]       
+          question = [
+            "What has keys but can't open locks?",
+            "I'm tall when I'm young, and I'm short when I'm old. What am I?",
+            "What comes once in a minute, twice in a moment, but never in a thousand years?",
+            "What has a head, a tail, is brown, and has no legs?",
+            "The more you take, the more you leave behind. What am I?",
+            "What has many keys but can't open a single lock?",
+            "What can travel around the world while staying in a corner?",
+            "What gets wet while drying?",
+            "What comes down but never goes up?",
+            "What belongs to you, but other people use it more than you do?",
+            "What has a neck but no head?",
+            "What has a bottom at the top?",
+            "What has a face and two hands but no arms or legs?",
+            "What can be cracked, made, told, and played?",
+            "What has cities, but no houses; forests, but no trees; and rivers, but no water?"
+        ]
+
+          First_options = [
+            "A piano",
+            "A tree",
+            "The letter 'a'",
+            "A snake",
+            "Footsteps",
+            "A keyboard",
+            "A stamp",
+            "A towel",
+            "Rain",
+            "Your name",
+            "A bottle",
+            "A leg",
+            "A clock",
+            "A joke",
+            "A map"
+        ]
+
+          Second_options = [
+            "A keyboard",
+            "A candle",
+            "The letter 'e'",
+            "A coin",
+            "Leaves",
+            "A piano",
+            "The book",
+            "A sponge",
+            "Sunset",
+            "Your phone number",
+            "A giraffe",
+            "A hat",
+            "A watch",
+            "A song",
+            "A globe"
+        ]
+
+          Third_options = [
+            "A book",
+            "A pencil",
+            "The letter 'm'",
+            "A penny",
+            "Memories",
+            "A remote",
+            "A stone",
+            "A mirror",
+            "A bird",
+            "Your email address",
+            "A book",
+            "A snake",
+            "A mirror",
+            "A story",
+            "A dictionary"
+        ]
+
+          Fourth_options = [
+            "A flute",
+            "A coin",
+            "The letter 'o'",
+            "A dog",
+            "Time",
+            "A password",
+            "A wind",
+            "A hairdryer",
+            "A moon",
+            "Your social security number",
+            "A niddle",
+            "A tree",
+            "A clamp",
+            "A riddle",
+            "A forest"
+        ]
+
+
+
+            # SCIENCE AND TECHNOLOGY
+        
+    elif category == "SCIENCE AND TECHNOLOGY":
+
+
+          correct_answers = [
+                "Photosynthesis",
+                "Albert Einstein",
+                "Atom",
+                "Central Processing Unit",
+                "Mercury",
+                "Tim Berners-Lee",
+                "Deoxyribonucleic Acid",
+                "Carbon Dioxide",
+                "H2O",
+                "Meteorology",
+                "Cheetah",
+                "Albert Einstein",
+                "Newton",
+                "Evaporation",
+                "Skin"
+        ]
+
+          question = [
+            "What is the process of converting light energy into electrical energy known as?",
+            "Which famous scientist developed the theory of relativity?",
+            "What is the smallest unit of matter?",
+            "What does CPU stand for in the context of computing?",
+            "What is the name of the closest planet to the Sun in our solar system?",
+            "Who is credited with inventing the World Wide Web?",
+            "What does DNA stand for in biology?",
+            "Which gas do plants use for photosynthesis?",
+            "What is the chemical symbol for water?",
+            "What is the study of Earth's atmosphere called?",
+            "What is the fastest animal on land?",
+            "Who is known as the 'father of modern physics'?",
+            "What is the SI unit of force?",
+            "What is the process of a liquid turning into a gas called?",
+            "What is the largest organ in the human body?"
+        ]
+
+          First_options = [
+            "Photosynthesis",
+            "Isaac Newton",
+            "Atom",
+            "Central Processing Unit",
+            "Mars",
+            "Tim Berners-Lee",
+            "Deoxyribonucleic Acid",
+            "Oxygen",
+            "H2O",
+            "Geology",
+            "Cheetah",
+            "Albert Einstein",
+            "Joule",
+            "Sublimation",
+            "Liver"
+        ]
+
+          Second_options = [
+            "Respiration",
+            "Albert Einstein",
+            "Molecule",
+            "Computer Processing Unit",
+            "Venus",
+            "Nikola Tesla",
+            "Ribonucleic Acid",
+            "Carbon Dioxide",
+            "O2",
+            "Meteorology",
+            "Lion",
+            "Galileo Galilei",
+            "Watt",
+            "Evaporation",
+            "Brain"
+        ]
+
+          Third_options = [
+            "Transmutation",
+            "Galileo Galilei",
+            "Proton",
+            "Central Power Unit",
+            "Mercury",
+            "Tim Cook",
+            "Deoxyribonucleic Acid",
+            "Nitrogen",
+            "CO",
+            "Oceanography",
+            "Leopard",
+            "Isaac Newton",
+            "Newton",
+            "Condensation",
+            "Skin"
+        ]
+
+          Fourth_options = [
+            "Solarization",
+            "Johannes Kepler",
+            "Electron",
+            "Central Power Unit",
+            "Earth",
+            "Al Gore",
+            "None of the above",
+            "Hydrogen",
+            "H2O2",
+            "Meteorology",
+            "Giraffe",
+            "Niels Bohr",
+            "Pascal",
+            "Deposition",
+            "Heart"
+        ]
+
+   
+    else:
+        messagebox.showerror("Invalid Category", "Please select a valid category.")
+        return
+      
+
+  
+
+
+    def shuffle_questions_and_options():
+        global question, First_options, Second_options, Third_options, Fourth_options, correct_answers, lifelines
+        # Shuffle the questions, options, correct answers, and lifelines together
+        questions_and_options = list(zip(question, First_options, Second_options, Third_options, Fourth_options, correct_answers, lifelines))
+        random.shuffle(questions_and_options)
+
+        # Unpack the shuffled values
+        question, First_options, Second_options, Third_options, Fourth_options, correct_answers, lifelines = zip(*questions_and_options)
+
+        # Shuffle the lifelines
+        random.shuffle(lifelines)
+
+        # Place the function call here to shuffle questions and options initially
+        shuffle_questions_and_options()
+
+
+
+
+
 
     root=Tk()
     root.geometry("1430x1430+0+0")
@@ -744,7 +1721,6 @@ def load_geography_questions():
 
     rightframe=Frame(root,pady=25,padx=50,bg="black")
     rightframe.grid(row=0, column=1)
-
     #===============================================IMAGES================================================#
     image50=PhotoImage(file="50-50.png")
     image50X=PhotoImage(file="50-50-X.png")
@@ -861,6 +1837,14 @@ def load_geography_questions():
     
 
 
+    def exit_game():
+        if messagebox.askokcancel("Exit", "Are you sure you want to exit the game?"):
+            # Add any necessary cleanup code here
+            # For example: stop music, close files, etc.
+            # Then destroy the root window
+            root.destroy()
+            # Optionally, you can also return to the category selection window
+            show_category_selection()
 
     def exit_game():
         if messagebox.askokcancel("Exit", "Are you sure you want to exit the game?"):
@@ -888,104 +1872,8 @@ def load_geography_questions():
 
 create_login_window()
 
-category = "GENERAL KNOWLEDGE" 
-correct_answers, question, options = load_general_knowledge_questions()
-main_game(category, question, options[0], options[1], options[2], options[3], correct_answers)
 
 
 #main_game("GENERAL KNOWLEDGE")
- # Define the category here, or load it from somewhere in your code
 
 
-correct_answers, question, options = load_geography_questions()
-main_game(category, question, options[0], options[1], options[2], options[3], correct_answers)
-     
-
-
-"""
-
-correct_answers = [
-            "Tokyos", "Canberra", "Mars", "Shakespeare", "Pacific Ocean",
-            "1776", "Vincent van Gogh", "Yen", "Nitrogen",
-            "Albert Einstein", "Japan", "Blue whale",
-            "Helium", "Harper Lee", "Ottawa"
-        ]
-        question = [
-            "What is the capital of Japan?",
-            "What is the capital city of Australia?",
-            "Which planet is known as the Red Planet?",
-            "Who wrote 'Romeo and Juliet'?",
-            "What is the largest ocean on Earth?",
-            "In what year did the United States declare its independence?",
-            "Who painted the famous artwork \"Starry Night\"?",
-            "What is the currency of Japan?",
-            "Which gas makes up the majority of Earth's atmosphere?",
-            "Who is known as the \"Father of Modern Physics\"?",
-            "Which country is known as the \"Land of the Rising Sun\"?",
-            "What is the largest mammal in the world?",
-            "Which of the following elements is a noble gas?",
-            "Who wrote the famous novel \"To Kill a Mockingbird\"?",
-            "What is the capital city of Canada?"
-        ]
-        options = [
-            ["Seoul", "Beijing", "Tokyo", "Bangkok"],
-            ["Sydney", "Melbourne", "Canberra", "Brisbane"],
-            ["Venus", "Mars", "Jupiter", "Saturn"],
-            ["Shakespeare", "Jane Austen", "Charles Dickens", "Emily Brontë"],
-            ["Atlantic Ocean", "Indian Ocean", "Pacific Ocean", "Southern Ocean"],
-            ["1776", "1789", "1800", "1865"],
-            ["Pablo Picasso", "Vincent van Gogh", "Leonardo da Vinci", "Claude Monet"],
-            ["Won", "Yen", "Baht", "Ringgit"],
-            ["Oxygen", "Carbon dioxide", "Nitrogen", "Hydrogen"],
-            ["Isaac Newton", "Albert Einstein", "Galileo Galilei", "Nikola Tesla"],
-            ["China", "Japan", "South Korea", "Vietnam"],
-            ["Elephant", "Blue whale", "Giraffe", "Gorilla"],
-            ["Oxygen", "Helium", "Sodium", "Carbon"],
-            ["J.K. Rowling", "Harper Lee", "Ernest Hemingway", "Scott Fitzgerald"],
-            ["Vancouver", "Toronto", "Ottawa", "Montreal"]
-        ]
-        return correct_answers, question, options
-
-    #def load_geography_questions():
-        correct_answers = [
-            "Canberra", "Russia", "Nile", "Russia", "Canada",
-            "Mount Everest", "Tokyo", "France", "Arctic Ocean",
-            "India", "Antarctica", "China", "Pacific Ocean",
-            "Mexico", "Africa"
-        ]
-        question = [
-            "What is the capital city of Australia?",
-            "Which country is the largest by land area?",
-            "What is the longest river in the world?",
-            "Which country spans across Europe and Asia?",
-            "Which is the second largest country by land area?",
-            "Which is the highest mountain peak on Earth?",
-            "What is the capital city of Japan?",
-            "Which country is famous for the Eiffel Tower?",
-            "Which ocean is the smallest and shallowest?",
-            "Which country is known for the Taj Mahal?",
-            "Which continent is entirely located in the Southern Hemisphere?",
-            "Which country has the largest population?",
-            "Which ocean is the largest and deepest?",
-            "Which country is known for the ancient ruins of Chichen Itza?",
-            "Which continent is known as the 'Dark Continent'?"
-        ]
-        options = [
-            ["Sydney", "Melbourne", "Canberra", "Perth"],
-            ["Australia", "Russia", "Brazil", "India"],
-            ["Amazon", "Mississippi", "Nile", "Ganges"],
-            ["United States", "China", "Canada", "Russia"],
-            ["Russia", "China", "USA", "India"],
-            ["K2", "Kangchenjunga", "Mount Everest", "Mont Blanc"],
-            ["Beijing", "Osaka", "Seoul", "Tokyo"],
-            ["Italy", "Germany", "UK", "France"],
-            ["Indian Ocean", "Southern Ocean", "Arctic Ocean", "Atlantic Ocean"],
-            ["Brazil", "China", "Japan", "Australia"],
-            ["Asia", "Australia", "Europe", "Antarctica"],
-            ["India", "Brazil", "USA", "China"],
-            ["Atlantic Ocean", "Indian Ocean", "Pacific Ocean", "Southern Ocean"],
-            ["USA", "Spain", "Canada", "Mexico"],
-            ["Asia", "Europe", "South America", "Australia"]
-        ]
-        return correct_answers, question, options
-"""

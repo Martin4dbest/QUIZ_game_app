@@ -313,14 +313,6 @@ def main_game(category):
     mixer.music.load("kbc.mp3")
     mixer.music.play(-1)
 
-
-
-    
-
-
-
-
-
     
 
     def select(event):
@@ -1446,14 +1438,14 @@ def main_game(category):
             "The letter 'm'",
             "A coin",
             "Footsteps",
-            "A piano",
+            "The piano",
             "A stamp",
             "A towel",
             "Rain",
             "Your name",
             "A bottle",
-            "A necktie",
             "A leg",
+            "A clock",
             "A joke",
             "A map"
     ]       
@@ -1500,7 +1492,7 @@ def main_game(category):
             "A coin",
             "Leaves",
             "A piano",
-            "A book",
+            "The book",
             "A sponge",
             "Sunset",
             "Your phone number",
@@ -1518,11 +1510,11 @@ def main_game(category):
             "A penny",
             "Memories",
             "A remote",
-            "A stamp",
+            "A stone",
             "A mirror",
             "A bird",
             "Your email address",
-            "A bottle",
+            "A book",
             "A snake",
             "A mirror",
             "A story",
@@ -1530,21 +1522,21 @@ def main_game(category):
         ]
 
           Fourth_options = [
-            "A piano",
-            "A candle",
+            "A flute",
+            "A coin",
             "The letter 'o'",
             "A dog",
             "Time",
             "A password",
-            "A stamp",
+            "A wind",
             "A hairdryer",
             "A moon",
             "Your social security number",
-            "A bottle",
+            "A niddle",
             "A tree",
-            "A clock",
+            "A clamp",
             "A riddle",
-            "A globe"
+            "A forest"
         ]
 
 
@@ -1667,25 +1659,6 @@ def main_game(category):
         messagebox.showerror("Invalid Category", "Please select a valid category.")
         return
       
-
-
- 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
