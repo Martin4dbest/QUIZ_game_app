@@ -18,7 +18,7 @@ from tkinter import PhotoImage
 
 
 
-# Define global variables for questions and options
+# Define global variables for questions and options and lifelines
 question = []
 First_options = []
 Second_options = []
