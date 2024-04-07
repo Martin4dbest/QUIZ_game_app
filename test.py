@@ -19,13 +19,7 @@ from tkinter import PhotoImage
 
 
 # Define global variables for questions and options and lifelines
-question = []
-First_options = []
-Second_options = []
-Third_options = []
-Fourth_options = []
-correct_answers = []
-lifelines = []
+
 
 
 #create database

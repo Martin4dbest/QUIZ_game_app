@@ -144,33 +144,24 @@ def show_category_selection():
     def start_game_with_category(category):
         global category_window
         category_window.destroy() 
-        #correct_answers, question, options = main_game(category)
         main_game(category)
-        #start_game_with_category("General Knowledge") 
-        
-     
-
     
 
     category_frame = ttk.Frame(category_window)
     category_frame.pack()
     
-
-
-
     for category in categories:
         button = ttk.Button(category_frame, text=category, command=lambda cat=category: start_game_with_category(cat))
 
         button.pack(side=tk.LEFT, padx=5, pady=5, ipadx=10, ipady=5)  # Adjust internal padding
        
-
         # Create logout button
     logout_button = ttk.Button(category_window, text="Logout", command=logout)
     logout_button.pack(pady=(20, 5))  # Adjust vertical padding with tuple (top, bottom)
 
         # Create exit button
     exit_button = ttk.Button(category_window, text="Exit", command=exit_game)
-    exit_button.pack(pady=(5, 20))  # Adjust
+    exit_button.pack(pady=(10, 20))  # Adjust
     
 
  
@@ -694,25 +685,25 @@ def main_game(category):
                 "Australia",
                 "Amazon",
                 "United States",
-                "Russia",
+                "Turkey",
                 "K2",
                 "Beijing",
                 "Italy",
                 "Indian Ocean",
-                "Brazil",
-                "Asia",
                 "India",
-                "Atlantic Ocean",
+                "Asia",
+                "Mali",      
+               "Atlantic Ocean",
                 "USA",
                 "Asia"
             ]
 
           Second_options = [
                 "Melbourne",
-                "India",
+                "England",
                 "Mississippi",
-                "China",
-                "China",
+                "USA",
+                "France",
                 "Kangchenjunga",
                 "Osaka",
                 "Germany",
@@ -729,15 +720,15 @@ def main_game(category):
                 "Canberra",
                 "Brazil",
                 "Nile",
+                "Scotland",
                 "Canada",
-                "USA",
                 "Mount Everest",
                 "Seoul",
                 "UK",
                 "Arctic Ocean",
                 "Japan",
                 "Europe",
-                "USA",
+                "Norway",
                 "Pacific Ocean",
                 "Canada",
                 "South America"
@@ -758,7 +749,7 @@ def main_game(category):
                 "China",
                 "Southern Ocean",
                 "Mexico",
-                "Australia"
+                "Africa"
    
             ]
 
