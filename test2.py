@@ -10,10 +10,12 @@ import tkinter.messagebox as messagebox
 from tkinter import StringVar
 from tkinter import Tk,Text,Button,StringVar,Label
 import random
+import time
 import sqlite3
 import re
 from tkinter import Tk, Entry, Label, Button, messagebox
 from tkinter import PhotoImage
+import threading
 
 
 #create database
@@ -100,10 +102,6 @@ def exit_game():
     global category_window
     category_window.destroy()
 
-
-
-
-
 def login():
     username = username_entry.get()
     password = password_entry.get()
@@ -126,13 +124,45 @@ def show_password():
     else:
         password_entry.config(show="*")
 
+def update_leaderboard(username, category):
+    conn = sqlite3.connect("users.db")
+    c = conn.cursor()
+    c.execute("INSERT INTO leaderboard (username, category, amount_won) VALUES (?, ?, ?)", (username, category, 100000))
+    conn.commit()
+    conn.close()
+
+def show_leaderboard():
+    leaderboard_window = tk.Toplevel()
+    leaderboard_window.title("Leaderboard")
+    leaderboard_window.geometry("400x300")
+
+    conn = sqlite3.connect("users.db")
+    c = conn.cursor()
+    c.execute("SELECT * FROM leaderboard ORDER BY amount_won DESC")
+    leaderboard_data = c.fetchall()
+    conn.close()
+
+    # Create a table to display leaderboard data
+    table = ttk.Treeview(leaderboard_window, columns=("Username", "Category", "Amount Won"))
+    table.heading("#0", text="Rank")
+    table.heading("Username", text="Username")
+    table.heading("Category", text="Category")
+    table.heading("Amount Won", text="Amount Won")
+    for i, (username, category, amount_won) in enumerate(leaderboard_data, start=1):
+        table.insert("", "end", text=str(i), values=(username, category, amount_won))
+
+    table.pack(expand=True, fill="both")
+
+
+
+
 
 def show_category_selection():
     global category_window
     category_window = tk.Tk()
     category_window.title("Category Selection")
     category_window.geometry("1430x1430")
-    category_window.configure(bg="blue")
+    category_window.configure(bg="black")
 
     img = tk.PhotoImage(file="logo90.png")
     img_label = tk.Label(category_window, image=img)
@@ -140,7 +170,39 @@ def show_category_selection():
 
     categories = ["GENERAL KNOWLEDGE", "GEOGRAPHY", "HISTORY", "LITERATURE", "MUSIC", "POP CULTURE", "SPORT", "COMPUTER SCIENCE", "RIDDLES", "SCIENCE AND TECHNOLOGY"]
 
+    def stop_game():
+        messagebox.showinfo("Time's Up!", "Sorry, time's up! Would you like to try again?")
+        #root.destroy()
+        # Optionally, you can also return to the category selection window
+        show_category_selection()
+    # Add logic here to stop the game
+
+    def start_timer():
+        def run_timer():
+            remaining_time = 60
+            while remaining_time > 0:
+                timer_label.config(text=f"Time Left: {remaining_time}")
+                remaining_time -= 1
+                time.sleep(1)
+            stop_game()  # Call stop_game when timer finishes
+
+        threading.Thread(target=run_timer).start()
+
+ 
+        # Create a label to display the timer
+    timer_label = tk.Label(category_window, text="Time Left: 60", font=("Arial", 12))
+    timer_label.pack(pady=(20, 5))
+
+    # Create a button to start the timer
+    timer_button = tk.Button(category_window, text="Start Timer", command=start_timer)
+    timer_button.pack(pady=(20, 5))
+
+      
+
+
+
     def start_game_with_category(category):
+        start_timer()
         global category_window
         category_window.destroy() 
         main_game(category)
@@ -152,86 +214,36 @@ def show_category_selection():
 
     
     for category in categories:
-        button = ttk.Button(category_frame, text=category, command=lambda cat=category: start_game_with_category(cat))
+        #button = ttk.Button(category_frame, text=category, command=lambda cat=category: start_game_with_category(cat))
+        button =Button(category_frame, text=category, font=("arial",10,"bold"),bg="green", fg="yellow",bd=0,activebackground="blue",activeforeground='black',cursor="hand2",wraplength=130,command=lambda cat=category: start_game_with_category(cat))
 
         button.pack(side=tk.LEFT, padx=5, pady=5, ipadx=10, ipady=5)  # Adjust internal padding
        
-        # Create logout button
-    logout_button = ttk.Button(category_window, text="Logout", command=logout)
-    logout_button.pack(pady=(20, 5))  # Adjust vertical padding with tuple (top, bottom)
+
+
+         #Create logout button
+    #logout_button = ttk.Button(category_window, text="Logout", command=logout)
+    #logout_button.pack(pady=(20, 5))  # Adjust vertical padding with tuple (top, bottom)
+
+    logout_button=Button(category_window, text= "logout",font=("arial",16,"bold"),bg="red", fg="white",bd=0,activebackground="red",activeforeground='white',cursor="hand2",wraplength=130, command=logout)#width=20)
+    logout_button.place(x=20, y=20)
+    logout_button.pack(pady=(80, 50)) 
+
 
         # Create exit button
-    exit_button = ttk.Button(category_window, text="Exit", command=exit_game)
-    exit_button.pack(pady=(10, 20))  # Adjust
+    #exit_button = ttk.Button(category_window, text="Exit", command=exit_game)
+    #exit_button.pack(pady=(10, 20))  # Adjust
 
+    exit_button=Button(category_window, text= "exit",font=("arial",16,"bold"),bg="black", fg="white",bd=0,activebackground="red",activeforeground='white',cursor="hand2",wraplength=130, command=exit_game)#width=20)
+    exit_button.place(x=20, y=20)
+    #exit_button.pack(pady=(80, 50)) 
     
 
-
+    
     category_window.mainloop()
 
 
-"""
-def start_timer(category):
-    timer_decision_window = tk.Toplevel()  # Create a new window for timer decision
-    timer_decision_window.title("Timer Decision")
-    timer_decision_window.geometry("300x150")
 
-    decision_label = ttk.Label(timer_decision_window, text="Do you want to enable the timer?")
-    decision_label.pack(pady=10)
-
-    def start_with_timer():
-        timer_decision_window.destroy()  # Close the decision window
-        start_timer_window(category)
-
-    def start_without_timer():
-        timer_decision_window.destroy()  # Close the decision window
-        #start_quiz(category, enable_timer=False)  # Start the quiz without a timer
-        
-       
-
-    timer_button_frame = ttk.Frame(timer_decision_window)
-    timer_button_frame.pack(pady=10)
-
-    timer_button = ttk.Button(timer_button_frame, text="Start with Timer", command=start_with_timer)
-    timer_button.grid(row=0, column=0, padx=10)
-
-    no_timer_button = ttk.Button(timer_button_frame, text="Continue without Timer", command=start_without_timer)
-    no_timer_button.grid(row=0, column=1, padx=10)
-
-def start_timer_window(category):
-    timer_window = tk.Toplevel()  # Use Toplevel instead of Tk
-    timer_window.title("Timer")
-    timer_window.geometry("300x200")
-
-    img = tk.PhotoImage(file="timerr.png")
-    img_label = tk.Label(timer_window, image=img)
-    img_label.pack()
-
-    countdown_label = ttk.Label(timer_window, text="Time Left:")
-    countdown_label.pack()
-
-    countdown_var = tk.StringVar()
-    countdown_display = ttk.Label(timer_window, textvariable=countdown_var)
-    countdown_display.pack()
-
-    # Timer countdown functionality
-    def countdown(seconds):
-        if seconds > 0:
-            countdown_var.set(seconds)
-            timer_window.after(1000, countdown, seconds - 1)  # Schedule the next call after 1000ms (1 second)
-        else:
-            countdown_var.set("Time's up!")
-            try_again_button = ttk.Button(timer_window, text="Try Again", command=timer_window.destroy)
-            try_again_button.pack(pady=5)
-
-            # Call the appropriate quiz function based on the selected category
-            start_quiz(category)
-           
-
-    countdown(60)  # Start the countdown from 60 seconds
-
-    timer_window.mainloop()
-"""
 
 
 def create_login_window():
@@ -289,6 +301,10 @@ def create_login_window():
     root.mainloop()
 
 
+
+
+
+
 def main_game(category):
     # Initialize pyttsx3 engine
     engine = pyttsx3.init()
@@ -298,7 +314,13 @@ def main_game(category):
     # Initialize mixer and play background music
     mixer.init()
     mixer.music.load("kbc.mp3")
-    mixer.music.play(-1)  
+    mixer.music.play(-1) 
+
+
+
+
+
+
 
     def select(event):
         callButtton.place_forget()
@@ -587,6 +609,10 @@ def main_game(category):
 
 
 
+
+
+#GENERAL KNOWLEDGE
+
     if category == "GENERAL KNOWLEDGE":
         correct_answers = [
         "Tokyo","Canberra", "Mars","Shakespeare","Pacific Ocean",
@@ -677,13 +703,13 @@ def main_game(category):
               "Sydney",
               "Australia",
               "Amazon",
-              "United States",
-              "Turkey",
-              "K2",
+              "Russia",
+              "Finland",
+              "Mount Everest",
               "Beijing",
               "Italy",
               "Indian Ocean",
-              "India",
+              "Australia",
               "Asia",
               "Mali",      
               "Atlantic Ocean",
@@ -691,24 +717,24 @@ def main_game(category):
               "Asia"
           ]
           Second_options = [
-          "Melbourne","England", "Mississippi", "USA", "France",
-          "Kangchenjunga", "Osaka", "Germany", "Southern Ocean",
-          "China", "Australia", "Brazil",
-          "Indian Ocean", "Spain", "Europe"
+          "Melbourne","England", "Nile", "USA", "Turkey",
+          "Kangchenjunga", "Tokyo", "France", "Southern Ocean",
+          "India", "Australia", "China",
+          "Pacific Ocean", "Mexico", "Europe"
           ]
 
           Third_options = [
-          "Canberra","Brazil", "Nile", "Scotland", "Canada",
-          "Mount Everest", "Seoul", "UK", "Arctic Ocean",
-          "Japan", "Europe", "Norway",
-          "Pacific Ocean", "Canada", "South America"
+          "Canberra","Brazil", "Mississippi", "Scotland", "Spain",
+          "Mont Blanc", "Seoul", "UK", "Arctic Ocean",
+          "Japan", "Antarctica", "Norway",
+          "Indian Ocean", "Canada", "Africa"
           ]
 
           Fourth_options = [
-          "Perth","Australia", "Ganges", "Russia", "India",
-          "Mont Blanc", "Tokyo", "France", "Atlantic Ocean",
-          "Australia", "Antarctica", "China",
-          "Southern Ocean", "Mexico", "Africa"
+          "Perth","Australia", "Ganges", "United States", "Canada",
+          "K2", "Osaka", "Germany", "Atlantic Ocean",
+          "Chile", "Europe", "Garbon",
+          "Southern Ocean", "Spain", "South America"
           ]
 
         #HISTORY 
@@ -751,16 +777,16 @@ def main_game(category):
 
           First_options = [
             "1789",
-            "Julius Caesar",
+            "Claudius",
             "Margaret Thatcher",
-            "World War I",
-            "Industrial Revolution",
-            "Treaty of Versailles",
+            "World War II",
+            "Victorian Era",
+            "Magna Carta",
             "Martin Luther King Jr.",
             "Korean War",
-            "Germany",
-            "Napoleon Bonaparte",
-            "World War I",
+            "France",
+            "Dust Bowl",
+            "World War V",
             "Hatshepsut",
             "Middle Ages",
             "Franklin D. Roosevelt",
@@ -768,56 +794,55 @@ def main_game(category):
         ]
 
           Second_options = [
-            "1776",
+            "1800",
             "Augustus",
-            "Rosa Parks",
-            "World War II",
-            "Victorian Era",
-            "Magna Carta",
-            "Malcolm X",
-            "Gulf War",
-            "Russia",
-            "Winston Churchill",
-            "Great Depression",
+            "Marie Curie",
+            "Vietnam War",
+            "Declaration of Independence",
+            "Nelson Mandela",
+            "Vietnam War",
+            "Germany",
+            "Napoleon Bonaparte",
+            "The triad war",
             "Cleopatra",
             "Renaissance",
-            "Neville Chamberlain",
+            "Winston Churchill",
             "Trans-Saharan Route"
         ]
 
           Third_options = [
-            "1800",
-            "Nero",
-            "Marie Curie",
+            "1776",
+            "Julius Caesar",
+            "Rosa Parks",
             "Cold War",
-            "Renaissance",
-            "Declaration of Independence",
-            "Nelson Mandela",
+            "Food crisis era",
+            "Treaty of Versailles",
+            "Malcolm X",
             "Afghanistan War",
-            "France",
+            "Russia",
             "Joseph Stalin",
-            "Cold War",
+            "Great Depression",
             "Nefertiti",
             "Enlightenment",
-            "Margaret Thatcher",
+            "Mercy Thatcher",
             "Silk Road"
         ]
 
           Fourth_options = [
             "1865",
-            "Claudius",
+            "Nero",
             "Florence Nightingale",
-            "Vietnam War",
+            "Industrial Revolution",
             "Enlightenment",
             "Emancipation Proclamation",
             "Barack Obama",
-            "Vietnam War",
+             "Gulf War",
             "China",
-            "Otto von Bismarck",
-            "Dust Bowl",
+            "Wisdom Churchill",
+            "Warm war",
             "Queen Elizabeth I",
             "Industrial Revolution",
-            "Winston Churchill",
+            "Neville Chamberlain",
             "Marco Polo Route"
         ]
 
@@ -864,72 +889,72 @@ def main_game(category):
         ]
 
           First_options = [
-            "William Wordsworth",
-            "Charles Dickens",
+            "John Milton",
+            "Jane Austen",
             "Fyodor Dostoevsky",
             "J.K. Rowling",
-            "Herman Melville",
-            "Macbeth",
-            "George Orwell",
-            "Harper Lee",
-            "Arthur Conan Doyle",
+            "Stephen King",
+            "Romeo and Juliet",
+            "Aldous Huxley",
+            "Truman Capote",
+            "Raymond Chandler",
             "King Lear",
             "J.K. Rowling",
-            "Ernest Hemingway",
-            "J.R.R. Tolkien",
+            "F. Scott Fitzgerald", 
+            "J.R. Tolkien",
             "Emily Brontë",
-            "Leo Tolstoy"
+           "Fyodor Dostoevsky"
         ]
 
           Second_options = [
             "George Orwell",
             "George Eliot",
             "Leo Tolstoy",
-            "Stephen King",
-            "Mark Twain",
-            "Romeo and Juliet",
-            "Aldous Huxley",
-            "Truman Capote",
-            "Agatha Christie",
+            "Marks Twaine ",
+            "Ernest Hemingway",
+            "Macbeth",
+            "George Orwell",
+            "Harper Lee",
+            "Arthur Conan Doyle",
             "Hamlet",
             "George R.R. Martin",
-            "F. Scott Fitzgerald",
-            "George R.R. Martin",
-            "Jane Austen",
-            "Miguel de Cervantes"
+            "Mark Twain",
+            "George R.R. Martin"
+            "Jane Austins",
+            "Leo Tolstoy"
         ]
 
           Third_options = [
-            "John Milton",
-            "Jane Austen",
+            "William Shakespeare",
+            "Charles Dickens",
             "Leo Tolstoy",
             "J.R.R. Tolkien",
             "Charles Dickens",
             "Othello",
             "J.R.R. Tolkien",
             "J.D. Salinger",
-            "Raymond Chandler",
-            "Macbeth",
+            "Agatha Christie", 
+            "Things fall apart",
             "J.R.R. Tolkien",
             "Charles Dickens",
-            "J.K. Rowling",
+            "George R. Martinez",
             "Charlotte Brontë",
-            "Fyodor Dostoevsky"
+            "Miguel de Cervantes" 
         ]
 
           Fourth_options = [
-            "William Shakespeare",
+            "William Wordsworth",
             "Herman Melville",
             "Fyodor Dostoevsky",
             "Dan Brown",
-            "Ernest Hemingway",
+            "Herman Melville", 
             "King Lear",
-            "George Orwell",
+            "George Orl",
             "Harper Lee",
             "Sir Arthur Conan Doyle",
             "Othello",
-            "Mark Twain",
-            "Mark Twain",
+            "Mark Titus",
+            "Ernest Hemingwa",
             "J.K. Rowling",
             "Jane Austen",
             "Kodor Dostoe"
@@ -975,75 +1000,75 @@ def main_game(category):
         ]
 
           First_options = [
-            "Michael Jackson",
+            "Prince",
             "Beethoven",
             "The Rolling Stones",
-            "Elton John",
-            "Beyoncé",
-            "Pink Floyd",
+            "Elvis Presley",
+            "Pink Flop",
+            "Led Zeppelin",  
             "J.S. Bach",
-            "Madonna",
-            "Mozart",
+            "Macdonald",
+            "Mozar",
             "The Beatles",
             "Johnny Cash",
-            "Adele",
+            "Adef",
             "The Beatles",
-            "Stevie Wonder",
+            "Marvin Gaye",
             "Rihanna"
         ]
 
           Second_options = [
             "Elvis Presley",
-            "Mozart",
+            "Bechez", 
             "The Beatles",
             "Bob Dylan",
             "Taylor Swift",
-            "Led Zeppelin",
-            "Mozart",
-            "Lady Gaga",
+            "Beyoncé",
             "Beethoven",
-            "Led Zeppelin",
-            "Elvis Presley",
-            "Katy Perry",
-            "The Rolling Stones",
-            "Marvin Gaye",
+            "Madonna",
+            "Thovan",
+            "Ned Seppelin",
+            "Queen",
+            "Taylor Swift",
+            "Pink Floyd",
+            "Stevie Wonder",
             "Britney Spears"
         ]
 
           Third_options = [
-            "Prince",
-            "Bach",
+            "Michael Jackson",
+            "Mozart",
             "The Beach Boys",
             "Chuck Berry",
-            "Adele",
+            "Mariah Carey",
             "The Eagles",
             "Johann Strauss II",
             "Whitney Houston",
-            "Chopin",
-            "The Rolling Stones",
-            "David Bowie",
+            "Bach",
+            "The Rollers",
+            "Johnny Cash",
             "Ariana Grande",
-            "Pink Floyd",
+            "The Rolling Stones",
             "Ray Charles",
-            "Mariah Carey"
+            "Beyoncé"
         ]
 
           Fourth_options = [
             "Stevie Wonder",
-            "Beethoven",
-            "The Beatles",
-            "Elvis Presley",
-            "Mariah Carey",
+            "Beethos",
+            "The Beles",
+            "Elton John",
+            "Adele", 
             "AC/DC",
             "Frederic Chopin",
             "Celine Dion",
             "Brahms",
             "Pink Floyd",
-            "Johnny Cash",
-            "Taylor Swift",
-            "Led Zeppelin",
+            "David Bowie", 
+            "Katy Perry",
+            "Ledo Zeppelins",
             "B.B. King",
-            "Beyoncé"
+            "Mariah Carey"
         ]
 
         #POP CULTURE
@@ -1088,9 +1113,9 @@ def main_game(category):
             "Adele",
             "Johnny Depp",
             "Rihanna",
-            "Paris Hilton",
+            "Kim Kardashian",
             "Twilight",
-            "The Crown",
+            "Stranger Things",
             "Kanye West",
             "Britney Spears",
             "Breaking Bad",
@@ -1098,62 +1123,62 @@ def main_game(category):
             "How I Met Your Mother",
             "Kanye West and Kim Kardashian",
             "BLACKPINK",
-            "Madonna",
+            "Rihanna",
             "Selena Gomez"
         ]
 
           Second_options = [
             "Taylor Swift",
-            "Leonardo DiCaprio",
-            "Madonna",
-            "Kim Kardashian",
+            "Tom Cruise", 
+            "Taylor Swift",
+            "Paris Hilton",
             "The Hunger Games",
-            "Stranger Things",
+            "The Crown",  
             "Drake",
-            "Lady Gaga",
+            "Ariana Grande",
             "Stranger Things",
             "Michael Jackson",
             "The Office",
-            "Jay-Z and Rihanna",
-            "EXO",
-            "Rihanna",
+            "Beyoncé and Jay-Z",
+            "BTS",
+            "Lady Gaga", 
             "Justin Timberlake"
         ]
 
           Third_options = [
             "Beyoncé",
-            "Tom Cruise",
-            "Beyoncé",
+            "Leonardo DiCaprio",
+            "Lady G",
             "Kylie Jenner",
-            "Harry Potter",
+            "Game of Thrones",  
             "Riverdale",
             "Eminem",
             "Katy Perry",
-            "The Witcher",
+           "Game of Thrones",
             "Prince",
             "Friends",
-            "Beyoncé and Jay-Z",
+            "Jay-Z and Rihanna",
             "NCT",
             "Beyoncé",
-            "Shawn Mendes"
+            "Justin Bieber"
         ]
 
           Fourth_options = [
-            "Ariana Grande",
+            "Ariana Grane",
             "Brad Pitt",
-            "Taylor Swift",
+            "Madonna", 
             "Kendall Jenner",
-            "Game of Thrones",
+            "Harry Potter",
             "Gossip Girl",
-            "Justin Bieber",
-            "Ariana Grande",
-            "Game of Thrones",
-            "Justin Bieber",
+            "Justin Mark",
+            "Lady Gaga",
+            "The Witcher",
+            "Justice Biebers",
             "Glee",
             "Selena Gomez and Justin Bieber",
-            "BTS",
+            "EXO",
             "Katy Perry",
-            "Justin Bieber"
+           "Shawn Mendes"
         ]
    
         #SPORT
@@ -1197,13 +1222,13 @@ def main_game(category):
           First_options = [
             "Kobe Bryant",
             "Mike Tyson",
-            "Lionel Messi",
+            "Serena Williams",
             "Venus Williams",
-            "Cristiano Ronaldo",
-            "Carl Lewis",
+            "Cristian Ronaldino",
+            "Usain Bolt",
             "Football",
-            "Rafael Nadal",
-            "Novak Djokovic",
+            "Raf Nerd",
+            "Andy Murray", 
             "Mark Spitz",
             "Nadia Comăneci",
             "Jack Nicklaus",
@@ -1216,22 +1241,22 @@ def main_game(category):
             "LeBron James",
             "Floyd Mayweather Jr.",
             "Cristiano Ronaldo",
-            "Serena Williams",
-            "Lionel Messi",
-            "Usain Bolt",
-            "Tennis",
-            "Andy Murray",
-            "Roger Federer",
+            "Ronaldinho Ronald",  
+            "Diego Maradona",
+            "Carl Lewis",
+            "Basketball",
+            "Novak Djokovic",
+            "Rafael Nadal",
             "Michael Phelps",
-            "Simone Biles",
-            "Arnold Palmer",
-            "Roger Federer",
+            "Aly Raisman", 
+            "Tiger Woods",
+            "Rogers Feder",
             "Tom Brady",
-            "Sachin Tendulkar"
+            "Ricky Ponting"  
         ]
 
           Third_options = [
-            "Magic Johnson",
+            "Michael Jordan",
             "Muhammad Ali",
             "Neymar",
             "Steffi Graf",
@@ -1239,30 +1264,30 @@ def main_game(category):
             "Asafa Powell",
             "Golf",
             "Stan Wawrinka",
-            "Rafael Nadal",
-            "Usain Bolt",
-            "Aly Raisman",
+            "Roger Federer"
+            "Hsaisen Bolt",
+            "Simone Biles",
             "Phil Mickelson",
             "Rafael Nadal",
             "Joe Montana",
-            "Ricky Ponting"
+            "Sachin Tendulkar"
         ]
 
           Fourth_options = [
-            "Michael Jordan",
+            "Magic Johnson", 
             "Sugar Ray Robinson",
             "Diego Maradona",
             "Margaret Court",
-            "Diego Maradona",
+            "Lionel Messi",
             "Michael Johnson",
-            "Basketball",
+            "Tennis",  
             "Novak Djokovic",
             "Pete Sampras",
             "LeBron James",
             "Nastia Liukin",
-            "Tiger Woods",
+            "Arnold Palmer", 
             "Novak Djokovic",
-            "Tom Brady",
+            "Tom Branek",
             "Brian Lara"
         ]
 
@@ -1306,43 +1331,43 @@ def main_game(category):
 
           First_options = [
             "To analyze algorithm complexity",
-            "A programming paradigm based on objects",
-            "TCP provides reliable data delivery, while UDP is connectionless and unreliable",
+            "A programming paradigm based on procedures",
+            "TCP is connectionless, while UDP provides reliable data delivery",
             "To translate high-level code into machine code",
-            "To eliminate redundancy and improve data integrity",
+            "To organize data in a hierarchical structure",
             "Symmetric encryption uses the same key for encryption and decryption",
-            "It allows the execution of programs larger than physical memory",
-            "A machine learning model inspired by the human brain",
+            "It allows multiple processes to share a single CPU",
+            "A machine learning model for natural language processing",
             "To reduce the size of data for storage or transmission",
-            "To store frequently accessed data for faster access",
-            "A stack follows Last In, First Out (LIFO) principle",
+            "To enhance the functionality of CPU registers",
+            "To facilitate parallel processing",
             "Encourages code reusability and modularity",
-            "A linked list stores elements sequentially in memory",
-            "Recursion involves a function calling itself until a base case is reached",
+            "An array provides constant-time access to elements",
+            "Recursion involves a function calling itself indefinitely",
             "HTTP is unencrypted, while HTTPS encrypts data for secure transmission"
         ]
 
           Second_options = [
             "To store large datasets efficiently",
             "A programming paradigm based on functions",
-            "TCP is connectionless, while UDP provides reliable data delivery",
+            "TCP provides reliable data delivery, while UDP is connectionless and unreliable",
             "To interpret code line by line during execution",
-            "To organize data in a hierarchical structure",
+            "To eliminate redundancy and improve data integrity",
             "Asymmetric encryption is faster than symmetric encryption",
-            "It allows multiple processes to share a single CPU",
+            "It allows the execution of programs larger than physical memory",
             "A search algorithm for finding optimal solutions",
             "To increase the size of data for better analysis",
-            "To enhance the functionality of CPU registers",
+            "To store frequently accessed data for faster access",
             "A queue follows First In, First Out (FIFO) principle",
             "Encourages procedural programming",
-            "An array provides constant-time access to elements",
+            "A linked list stores elements sequentially in memory",
             "Recursion involves dividing a problem into smaller subproblems",
             "HTTP compresses data for faster transmission"
         ]
 
           Third_options = [
             "To design user interfaces",
-            "A programming paradigm based on procedures",
+            "A programming paradigm based on objects",
             "TCP guarantees packet delivery, while UDP doesn't guarantee",
             "To manage hardware resources and provide services",
             "To optimize database query performance",
@@ -1350,8 +1375,7 @@ def main_game(category):
             "It increases the execution speed of programs",
             "A sorting algorithm for arranging data alphabetically",
             "To eliminate data redundancy for better storage efficiency",
-            "To facilitate parallel processing",
-            "Both have the same principles",
+            "Both have the same principlesA stack follows Last In, First Out (LIFO) principle",
             "Encourages functional programming",
             "Both have the same characteristics",
             "Recursion involves sorting elements sequentially",
@@ -1366,13 +1390,13 @@ def main_game(category):
             "To increase redundancy for data recovery",
             "Asymmetric encryption is more secure than symmetric encryption",
             "It simulates the behavior of a physical memory",
-            "A machine learning model for natural language processing",
+            "A machine learning model inspired by the human brain",
             "To improve data compression ratio",
             "To allocate memory for program execution",
             "None of the above",
             "None of the above",
             "None of the above",
-            "Recursion involves a function calling itself indefinitely",
+            "Recursion involves a function calling itself until a base case is reached",
             "HTTPS slows down web communication"
         ]
 
@@ -1421,49 +1445,49 @@ def main_game(category):
             "A tree",
             "The letter 'a'",
             "A snake",
-            "Footsteps",
-            "A keyboard",
-            "A stamp",
-            "A towel",
+            "Leaves", 
+            "The piano",
+            "The book",
+            "A sponge",
             "Rain",
-            "Your name",
-            "A bottle",
+            "Your phone number",
+            "A book",
             "A leg",
-            "A clock",
-            "A joke",
+            "A watch",
+            "A riddle",
             "A map"
         ]
 
           Second_options = [
             "A keyboard",
-            "A candle",
+            "A pecil",
             "The letter 'e'",
-            "A coin",
-            "Leaves",
-            "A piano",
-            "The book",
-            "A sponge",
+            "A penny",
+            "Footsteps",
+            "A keyboard",
+            "A stamp",
+            "A towel",
             "Sunset",
-            "Your phone number",
+            "Your name",
             "A giraffe",
             "A hat",
-            "A watch",
+            "A clock",
             "A song",
             "A globe"
         ]
 
           Third_options = [
             "A book",
-            "A pencil",
+            "A candle",
             "The letter 'm'",
-            "A penny",
+            "A coin",
             "Memories",
             "A remote",
             "A stone",
             "A mirror",
             "A bird",
             "Your email address",
-            "A book",
+            "A bottle",
             "A snake",
             "A mirror",
             "A story",
@@ -1484,7 +1508,7 @@ def main_game(category):
             "A niddle",
             "A tree",
             "A clamp",
-            "A riddle",
+            "A joke",
             "A forest"
         ]
 
@@ -1507,7 +1531,7 @@ def main_game(category):
                 "H2O",
                 "Meteorology",
                 "Cheetah",
-                "Albert Einstein",
+                "mass",
                 "Newton",
                 "Evaporation",
                 "Skin"
@@ -1525,7 +1549,7 @@ def main_game(category):
             "What is the chemical symbol for water?",
             "What is the study of Earth's atmosphere called?",
             "What is the fastest animal on land?",
-            "Who is known as the 'father of modern physics'?",
+            "Which is a basic quantity?",
             "What is the SI unit of force?",
             "What is the process of a liquid turning into a gas called?",
             "What is the largest organ in the human body?"
@@ -1534,16 +1558,16 @@ def main_game(category):
           First_options = [
             "Photosynthesis",
             "Isaac Newton",
-            "Atom",
+            "Molecule",
             "Central Processing Unit",
             "Mars",
             "Tim Berners-Lee",
-            "Deoxyribonucleic Acid",
+            "Ribonucleic Acid",
             "Oxygen",
             "H2O",
             "Geology",
-            "Cheetah",
-            "Albert Einstein",
+            "Leopard",
+            "mass",
             "Joule",
             "Sublimation",
             "Liver"
@@ -1551,17 +1575,17 @@ def main_game(category):
 
           Second_options = [
             "Respiration",
-            "Albert Einstein",
-            "Molecule",
+            "Galileo Galilei",
+            "Atom",
             "Computer Processing Unit",
-            "Venus",
+            "Mercury",
             "Nikola Tesla",
-            "Ribonucleic Acid",
+            "Deoxyribonucleic Acid",
             "Carbon Dioxide",
             "O2",
             "Meteorology",
             "Lion",
-            "Galileo Galilei",
+            "force",
             "Watt",
             "Evaporation",
             "Brain"
@@ -1569,17 +1593,17 @@ def main_game(category):
 
           Third_options = [
             "Transmutation",
-            "Galileo Galilei",
+            "Albert Einstein",
             "Proton",
             "Central Power Unit",
-            "Mercury",
+            "Venus",
             "Tim Cook",
             "Deoxyribonucleic Acid",
             "Nitrogen",
             "CO",
             "Oceanography",
-            "Leopard",
-            "Isaac Newton",
+            "Cheetah",
+            "density",
             "Newton",
             "Condensation",
             "Skin"
@@ -1589,7 +1613,7 @@ def main_game(category):
             "Solarization",
             "Johannes Kepler",
             "Electron",
-            "Central Power Unit",
+            "Center Power Unit",
             "Earth",
             "Al Gore",
             "None of the above",
@@ -1597,7 +1621,7 @@ def main_game(category):
             "H2O2",
             "Meteorology",
             "Giraffe",
-            "Niels Bohr",
+            "weight",
             "Pascal",
             "Deposition",
             "Heart"
@@ -1778,14 +1802,31 @@ def main_game(category):
 
 
 
+ 
+
+    
 
     # Set the default style to have a red background
     root.style = ttk.Style()
     root.style.configure(".", background="red", foreground="black")
 
     # Create the exit button with the default style
-    exit_button = ttk.Button(root, text="Exit", command=exit_game)
-    exit_button.grid(row=0, column=1, sticky="ne")  
+    #exit_button = ttk.Button(root, text="Exit", command=exit_game)
+    #exit_button.grid(row=0, column=1, sticky="ne")  
+
+    exit_button = Button(root, text="Exit", bg="red", fg="white",bd=0,activebackground="red",activeforeground='white',cursor="hand2",wraplength=130, command=exit_game)
+    exit_button.grid(row=2, column=4, sticky="ne")  
+    #exit_button.place(x=50, y=50)
+
+
+
+    
+
+
+
+
+
+
 
 
 
@@ -1799,165 +1840,3 @@ create_login_window()
 #main_game("GENERAL KNOWLEDGE")
 
 
-
-
-
-
-"""
-import tkinter as tk
-from tkinter import simpledialog
-import sqlite3
-
-class LeaderboardApp:
-      def __init__(self, master):
-          self.master = master
-          self.master.title("Quiz Game Leaderboard")
-
-          # Connect to SQLite database
-          self.conn = sqlite3.connect('leaderboard.db')
-          self.cursor = self.conn.cursor()
-
-          # Create leaderboard table if it doesn't exist
-          self.cursor.execute('''CREATE TABLE IF NOT EXISTS leaderboard (
-                                      id INTEGER PRIMARY KEY,
-                                      name TEXT,
-                                      category TEXT,
-                                      score INTEGER
-                                  )''')
-          self.conn.commit()
-
-          # Create leaderboard frame
-          self.leaderboard_frame = tk.Frame(self.master)
-          self.leaderboard_frame.pack()
-
-          # Create leaderboard table
-          self.leaderboard_table = tk.Text(self.leaderboard_frame, height=10, width=30)
-          self.leaderboard_table.grid(row=0, column=0, padx=10, pady=10)
-          self.leaderboard_table.insert(tk.END, "Rank\tName\tCategory\tScore\n")
-
-          # Add player button
-          self.add_player_button = tk.Button(self.leaderboard_frame, text="Add Player", command=self.add_player)
-          self.add_player_button.grid(row=1, column=0, pady=5)
-
-          # Display leaderboard from database
-          self.display_leaderboard()
-
-      def add_player(self):
-          name = simpledialog.askstring("Input", "Enter your username:")
-          if name:
-              category = simpledialog.askstring("Input", "Enter the category played:")
-              if category:
-                  score = 1000000  # Simulated score for testing
-                  self.cursor.execute("INSERT INTO leaderboard (name, category, score) VALUES (?, ?, ?)", (name, category, score))
-                  self.conn.commit()
-                  self.display_leaderboard()
-
-      def display_leaderboard(self):
-          self.leaderboard_table.delete('1.0', tk.END)  # Clear previous entries
-          self.leaderboard_table.insert(tk.END, "Rank\tName\tCategory\tScore\n")
-          rank = 1
-          for row in self.cursor.execute("SELECT name, category, score FROM leaderboard ORDER BY score DESC"):
-              self.leaderboard_table.insert(tk.END, f"{rank}\t{row[0]}\t{row[1]}\t{row[2]}\n")
-              rank += 1
-
-root = tk.Tk()
-app = LeaderboardApp(root)
-root.mainloop()
-"""
-
-
-
-"""
-def start_timer(category):
-    timer_decision_window = tk.Toplevel()  # Create a new window for timer decision
-    timer_decision_window.title("Timer Decision")
-    timer_decision_window.geometry("300x150")
-
-    decision_label = ttk.Label(timer_decision_window, text="Do you want to enable the timer?")
-    decision_label.pack(pady=10)
-
-    def start_with_timer():
-        timer_decision_window.destroy()  # Close the decision window
-        start_timer_window(category)
-
-    def start_without_timer():
-        timer_decision_window.destroy()  # Close the decision window
-        #start_quiz(category, enable_timer=False)  # Start the quiz without a timer
-        
-       
-
-    timer_button_frame = ttk.Frame(timer_decision_window)
-    timer_button_frame.pack(pady=10)
-
-    timer_button = ttk.Button(timer_button_frame, text="Start with Timer", command=start_with_timer)
-    timer_button.grid(row=0, column=0, padx=10)
-
-    no_timer_button = ttk.Button(timer_button_frame, text="Continue without Timer", command=start_without_timer)
-    no_timer_button.grid(row=0, column=1, padx=10)
-
-def start_timer_window(category):
-    timer_window = tk.Toplevel()  # Use Toplevel instead of Tk
-    timer_window.title("Timer")
-    timer_window.geometry("300x200")
-
-    img = tk.PhotoImage(file="timerr.png")
-    img_label = tk.Label(timer_window, image=img)
-    img_label.pack()
-
-    countdown_label = ttk.Label(timer_window, text="Time Left:")
-    countdown_label.pack()
-
-    countdown_var = tk.StringVar()
-    countdown_display = ttk.Label(timer_window, textvariable=countdown_var)
-    countdown_display.pack()
-
-    # Timer countdown functionality
-    def countdown(seconds):
-        if seconds > 0:
-            countdown_var.set(seconds)
-            timer_window.after(1000, countdown, seconds - 1)  # Schedule the next call after 1000ms (1 second)
-        else:
-            countdown_var.set("Time's up!")
-            try_again_button = ttk.Button(timer_window, text="Try Again", command=timer_window.destroy)
-            try_again_button.pack(pady=5)
-
-            # Call the appropriate quiz function based on the selected category
-            start_quiz(category)
-           
-
-    countdown(60)  # Start the countdown from 60 seconds
-
-    timer_window.mainloop()
-"""
-
-
-
-"""      
-    # Define stop_game function
-    def stop_game():
-        messagebox.showinfo("Time's Up!", "Sorry, time's up! Would you like to try again?")
-        # Implement any logic here to reset the game or take any necessary actions
-
-    # Define start_timer function
-    def start_timer():
-        remaining_time = 60  # Initial time in seconds
-
-        def count_down():
-            nonlocal remaining_time
-            remaining_time -= 1
-            if remaining_time <= 0:
-                stop_game()
-            else:
-                timer_button.config(text=f"Time Left: {remaining_time}")
-                timer_button.pack(side="left", padx=5, pady=5)
-                timer_button.after(1000, count_down)
-
-        count_down()  # Start the countdown timer
-
-  
-      
-    # Create the timer button
-    timer_button = Button(category_window, text="Start Timer", command=start_timer)
-    timer_button.pack(pady=(20, 5))  # Adjust vertical padding with tuple (top, bottom)
-
-"""
