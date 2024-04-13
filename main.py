@@ -3,7 +3,7 @@ import tkinter as tk
 from tkinter.ttk import Progressbar
 from pygame import mixer
 import pyttsx3
-from tkinter import ttk, messagebox
+from tkinter import ttk, messagebox, simpledialog
 import json
 from tkinter import Tk, Text, Button, Label, Frame, PhotoImage
 import tkinter.messagebox as messagebox
@@ -117,8 +117,150 @@ def login():
     else:
         messagebox.showerror("Error", "Invalid username or password.")
 
-def forgot_password():
-    messagebox.showinfo("Forgot Password", "Please contact support for assistance.")
+
+#def forgot_password():
+    #messagebox.showinfo("Forgot Password", "Please contact support for assistance.")
+"""
+# Function to reset password
+def reset_password():
+    # Prompt the user to enter their username
+    username = simpledialog.askstring("Forgot Password", "Enter your username:")
+    if not username:
+        # If the user cancels or closes the dialog, return without resetting the password
+        return
+
+    # Connect to the database
+    conn = sqlite3.connect('users.db')
+    c = conn.cursor()
+
+    # Check if the username exists in the database
+    c.execute("SELECT * FROM users WHERE username = ?", (username,))
+    user = c.fetchone()
+
+    if user:
+        # Create a new Toplevel window for password reset
+        password_window = tk.Toplevel()
+        password_window.title("Reset Password")
+        
+        # Calculate the position to center the password reset window relative to the main login window
+        window_width = 300
+        window_height = 150
+        screen_width = password_window.winfo_screenwidth()
+        screen_height = password_window.winfo_screenheight()
+        x = (screen_width - window_width) // 2
+        y = (screen_height - window_height) // 2
+        password_window.geometry(f"{window_width}x{window_height}+{x}+{y}")
+
+        # Prompt the user to enter a new password
+        new_password_label = ttk.Label(password_window, text="Enter your new password:")
+        new_password_label.pack(pady=5)
+
+        new_password_entry = ttk.Entry(password_window, show="*")
+        new_password_entry.pack(pady=5)
+
+        # Function to update the password in the database
+        def update_password():
+            new_password = new_password_entry.get()
+
+       # Check if the new password meets the validation requirements
+            if len(new_password) < 6 or not new_password.isalnum():
+                messagebox.showerror("Error", "Password must be alphanumeric and at least 6 characters long.")
+                return
+
+
+            if new_password:
+                # Update the password in the database
+                c.execute("UPDATE users SET password = ? WHERE username = ?", (new_password, username))
+                conn.commit()
+                conn.close()
+                messagebox.showinfo("Password Reset", "Your password has been reset successfully.")
+                password_window.destroy()
+            else:
+                messagebox.showerror("Error", "Please enter a new password.")
+
+        update_button = ttk.Button(password_window, text="Update Password", command=update_password)
+        update_button.pack(pady=5)
+    else:
+        # If the username does not exist, display an error message
+        messagebox.showerror("Error", "Username not found.")
+        conn.close()
+"""
+
+def reset_password():
+    # Prompt the user to enter their username
+    username = simpledialog.askstring("Forgot Password", "Enter your username:")
+    if not username:
+        # If the user cancels or closes the dialog, return without resetting the password
+        return
+
+    # Connect to the database
+    conn = sqlite3.connect('users.db')
+    c = conn.cursor()
+
+    # Check if the username exists in the database
+    c.execute("SELECT * FROM users WHERE username = ?", (username,))
+    user = c.fetchone()
+
+    if user:
+        # Create a new Toplevel window for password reset
+        password_window = tk.Toplevel()
+        password_window.title("Reset Password")
+        
+        # Calculate the position to center the password reset window relative to the main login window
+        window_width = 300
+        window_height = 200
+        screen_width = password_window.winfo_screenwidth()
+        screen_height = password_window.winfo_screenheight()
+        x = (screen_width - window_width) // 2
+        y = (screen_height - window_height) // 2
+        password_window.geometry(f"{window_width}x{window_height}+{x}+{y}")
+
+        # Apply a custom style to the window
+        password_window.configure(bg="#f0f0f0")
+        password_window.attributes("-topmost", True)  # Bring the window to the front
+        password_window.resizable(False, False)  # Disable resizing
+
+        # Create a frame for the password reset form
+        frame = ttk.Frame(password_window, padding=20, relief="ridge", borderwidth=2)
+        frame.pack(fill="both", expand=True)
+
+        # Prompt the user to enter a new password
+        new_password_label = ttk.Label(frame, text="Enter your new password:", font=("Arial", 10, "bold"), foreground="#333333")
+        new_password_label.grid(row=0, column=0, padx=5, pady=5, sticky="w")
+
+        new_password_entry = ttk.Entry(frame, show="*", font=("Arial", 10), width=20)
+        new_password_entry.grid(row=0, column=1, padx=5, pady=5)
+
+        # Function to update the password in the database
+        def update_password():
+            new_password = new_password_entry.get()
+            if new_password:
+                # Check if the new password meets the validation requirements
+                if len(new_password) < 6 or not new_password.isalnum():
+                    messagebox.showerror("Error", "Password must be alphanumeric and at least 6 characters long.")
+                    return
+                
+                # Update the password in the database
+                c.execute("UPDATE users SET password = ? WHERE username = ?", (new_password, username))
+                conn.commit()
+                conn.close()
+                password_window.destroy()
+                messagebox.showinfo("Password Reset", "Your password has been reset successfully.")
+                
+            else:
+                messagebox.showerror("Error", "Please enter a new password.")
+
+        update_button = ttk.Button(frame, text="Update Password", command=update_password, style="Green.TButton")
+        update_button.grid(row=1, columnspan=2, pady=10)
+
+        # Define custom style for the update button
+        password_window.style = ttk.Style()
+        password_window.style.configure("Green.TButton", foreground="white", background="#4CAF50", font=("Arial", 10, "bold"))
+
+    else:
+        # If the username does not exist, display an error message
+        messagebox.showerror("Error", "Username not found.")
+        conn.close()
 
 def show_password():
     if password_var.get():
@@ -348,9 +490,16 @@ def create_login_window():
     register_button = ttk.Button(frame, text="Register", command=register, style="Blue.TButton")
     register_button.grid(row=4, column=0, columnspan=2, padx=5, pady=10, sticky="ew")
 
-    forgot_password_label = tk.Label(root, text="Forgot Password?", fg="blue", cursor="hand2")
+    #forgot_password_label = tk.Label(root, text="Forgot Password?", fg="blue", cursor="hand2")
+    #forgot_password_label.pack(pady=5)
+    #forgot_password_label.bind("<Button-1>", lambda e: forgot_password())
+
+    #forgot_password_button = ttk.Button(root, text="Forgot Password?",  command=forgot_password)
+    #forgot_password_button.pack(pady=5)
+
+    forgot_password_label = tk.Label(root, text="Forgot Password?", fg="green", cursor="hand2")
     forgot_password_label.pack(pady=5)
-    forgot_password_label.bind("<Button-1>", lambda e: forgot_password())
+    forgot_password_label.bind("<Button-1>", lambda e: reset_password())
 
     # Define custom style for rounded entry widgets
     root.style = ttk.Style()

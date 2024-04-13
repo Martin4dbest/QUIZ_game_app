@@ -3,7 +3,7 @@ import tkinter as tk
 from tkinter.ttk import Progressbar
 from pygame import mixer
 import pyttsx3
-from tkinter import ttk, messagebox
+from tkinter import ttk, messagebox, simpledialog
 import json
 from tkinter import Tk, Text, Button, Label, Frame, PhotoImage
 import tkinter.messagebox as messagebox
@@ -117,15 +117,105 @@ def login():
     else:
         messagebox.showerror("Error", "Invalid username or password.")
 
-def forgot_password():
-    messagebox.showinfo("Forgot Password", "Please contact support for assistance.")
+
+#def forgot_password():
+    #messagebox.showinfo("Forgot Password", "Please contact support for assistance.")
+
+def reset_password():
+    # Prompt the user to enter their username
+    username = simpledialog.askstring("Forgot Password", "Enter your username:")
+    if not username:
+        # If the user cancels or closes the dialog, return without resetting the password
+        return
+
+    # Connect to the database
+    conn = sqlite3.connect('users.db')
+    c = conn.cursor()
+
+    # Check if the username exists in the database
+    c.execute("SELECT * FROM users WHERE username = ?", (username,))
+    user = c.fetchone()
+
+    if user:
+        # Create a new Toplevel window for password reset
+        password_window = tk.Toplevel()
+        password_window.title("Reset Password")
+        
+        # Calculate the position to center the password reset window relative to the main login window
+        window_width = 300
+        window_height = 200
+        screen_width = password_window.winfo_screenwidth()
+        screen_height = password_window.winfo_screenheight()
+        x = (screen_width - window_width) // 2
+        y = (screen_height - window_height) // 2
+        password_window.geometry(f"{window_width}x{window_height}+{x}+{y}")
+
+        # Apply a custom style to the window
+        password_window.configure(bg="#f0f0f0")
+        password_window.attributes("-topmost", True)  # Bring the window to the front
+        password_window.resizable(False, False)  # Disable resizing
+
+        # Create a frame for the password reset form
+        frame = ttk.Frame(password_window, padding=20, relief="ridge", borderwidth=2)
+        frame.pack(fill="both", expand=True)
+
+        # Prompt the user to enter a new password
+        new_password_label = ttk.Label(frame, text="Enter your new password:", font=("Arial", 10, "bold"), foreground="#333333")
+        new_password_label.grid(row=0, column=0, padx=5, pady=5, sticky="w")
+
+        new_password_entry = ttk.Entry(frame, show="*", font=("Arial", 10), width=20)
+        new_password_entry.grid(row=0, column=1, padx=5, pady=5)
+
+                # Function to toggle password visibility
+        def toggle_password_visibility():
+            if show_password_var.get():
+                new_password_entry.config(show="")
+            else:
+                new_password_entry.config(show="*")
+
+        # Create a check button to toggle password visibility
+        show_password_var = tk.BooleanVar()
+        show_password_checkbox = ttk.Checkbutton(frame, text="Show Password", variable=show_password_var, command=toggle_password_visibility)
+        show_password_checkbox.grid(row=1, columnspan=2, pady=5)
+
+
+        # Function to update the password in the database
+        def update_password():
+            new_password = new_password_entry.get()
+            if new_password:
+                # Check if the new password meets the validation requirements
+                if len(new_password) < 6 or not new_password.isalnum():
+                    messagebox.showerror("Error", "Password must be alphanumeric and at least 6 characters long.")
+                    return
+                
+                # Update the password in the database
+                c.execute("UPDATE users SET password = ? WHERE username = ?", (new_password, username))
+                conn.commit()
+                conn.close()
+                password_window.destroy()
+                messagebox.showinfo("Password Reset", "Your password has been reset successfully.")
+                
+            else:
+                messagebox.showerror("Error", "Please enter a new password.")
+
+        update_button = ttk.Button(frame, text="Update Password", command=update_password, style="Green.TButton")
+        update_button.grid(row=1, columnspan=2, pady=10)
+
+        # Define custom style for the update button
+        password_window.style = ttk.Style()
+        password_window.style.configure("Green.TButton", foreground="white", background="#4CAF50", font=("Arial", 10, "bold"))
+
+    else:
+        # If the username does not exist, display an error message
+        messagebox.showerror("Error", "Username not found.")
+        conn.close()
+
 
 def show_password():
     if password_var.get():
         password_entry.config(show="")
     else:
         password_entry.config(show="*")
-
 
 def update_leaderboard(username, category):
     conn = sqlite3.connect("users.db")
@@ -134,11 +224,16 @@ def update_leaderboard(username, category):
     conn.commit()
     conn.close()
 
-def show_leaderboard():
-    leaderboard_window = tk.Toplevel()
+def show_leaderboard(root):
+    leaderboard_window = tk.Toplevel(root)
     leaderboard_window.title("Leaderboard")
-    leaderboard_window.geometry("400x300")
+    leaderboard_window.geometry("1430x1430")
 
+    # Create a frame that spans the entire window with a green background
+    frame = tk.Frame(leaderboard_window, bg="green")
+    frame.place(relx=0, rely=0, relwidth=1, relheight=1)
+
+    # Retrieve leaderboard data from the database
     conn = sqlite3.connect("users.db")
     c = conn.cursor()
     c.execute("SELECT * FROM leaderboard ORDER BY amount_won DESC")
@@ -146,7 +241,7 @@ def show_leaderboard():
     conn.close()
 
     # Create a table to display leaderboard data
-    table = ttk.Treeview(leaderboard_window, columns=("Username", "Category", "Amount Won"))
+    table = ttk.Treeview(frame, columns=("Username", "Category", "Amount Won"))
     table.heading("#0", text="Rank")
     table.heading("Username", text="Username")
     table.heading("Category", text="Category")
@@ -155,6 +250,19 @@ def show_leaderboard():
         table.insert("", "end", text=str(i), values=(username, category, amount_won))
 
     table.pack(expand=True, fill="both")
+
+    leaderboard_window.mainloop()
+  # Assuming you have already created a Tkinter root instance named 'root'
+  # Create a Tkinter root instance
+    root = tk.Tk()
+
+        # Call the show_leaderboard() function passing the root instance
+    show_leaderboard(root)
+
+  # Run the Tkinter event loop
+
+
+
 
 
 
@@ -171,6 +279,13 @@ def show_category_selection():
     img = tk.PhotoImage(file="logo90.png")
     img_label = tk.Label(category_window, image=img)
     img_label.pack()
+
+        # Create a button to show the leaderboard
+    leaderboard_button = tk.Button(category_window, text="Leaderboard", command=show_leaderboard)
+    leaderboard_button.pack(pady=(20, 5))
+
+
+
 
     categories = ["GENERAL KNOWLEDGE", "GEOGRAPHY", "HISTORY", "LITERATURE", "MUSIC", "POP CULTURE", "SPORT", "COMPUTER SCIENCE", "RIDDLES", "SCIENCE AND TECHNOLOGY"]
 
@@ -324,9 +439,16 @@ def create_login_window():
     register_button = ttk.Button(frame, text="Register", command=register, style="Blue.TButton")
     register_button.grid(row=4, column=0, columnspan=2, padx=5, pady=10, sticky="ew")
 
-    forgot_password_label = tk.Label(root, text="Forgot Password?", fg="blue", cursor="hand2")
+    #forgot_password_label = tk.Label(root, text="Forgot Password?", fg="blue", cursor="hand2")
+    #forgot_password_label.pack(pady=5)
+    #forgot_password_label.bind("<Button-1>", lambda e: forgot_password())
+
+    #forgot_password_button = ttk.Button(root, text="Forgot Password?",  command=forgot_password)
+    #forgot_password_button.pack(pady=5)
+
+    forgot_password_label = tk.Label(root, text="Forgot Password?", fg="green", cursor="hand2")
     forgot_password_label.pack(pady=5)
-    forgot_password_label.bind("<Button-1>", lambda e: forgot_password())
+    forgot_password_label.bind("<Button-1>", lambda e: reset_password())
 
     # Define custom style for rounded entry widgets
     root.style = ttk.Style()
@@ -343,6 +465,10 @@ def main_game(category):
     engine = pyttsx3.init()
     voices = engine.getProperty('voices')
     engine.setProperty("voice", voices[0].id)
+
+    
+    # Call show_leaderboard function passing root as argument
+    
 
     # Initialize mixer and play background music
     mixer.init()
@@ -1857,6 +1983,5 @@ create_login_window()
 
 
 #main_game("GENERAL KNOWLEDGE")
-
 
 
