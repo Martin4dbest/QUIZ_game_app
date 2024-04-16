@@ -69,7 +69,98 @@ def authenticate_user(username, password):
     c.execute("SELECT * FROM users WHERE username=? AND password=?", (username, password))
     result = c.fetchone()
     conn.close()
-    return result is not None
+    if result:
+        return result[0]  # Return the username if authentication is successful
+    else:
+        return None
+
+def create_leaderboard_table():
+    conn = sqlite3.connect("users.db")
+    c = conn.cursor()
+    c.execute('''DROP TABLE IF EXISTS leaderboard''')  # Drop the existing table if it exists
+    c.execute('''CREATE TABLE IF NOT EXISTS leaderboard
+                 (username TEXT PRIMARY KEY, amount_won REAL, category_played TEXT)''')  # Recreate the table with the updated schema
+    conn.commit()
+    conn.close()
+
+
+create_leaderboard_table()
+
+def update_leaderboard(username, amount_won, category_played):
+    conn = sqlite3.connect("users.db")
+    c = conn.cursor()
+
+    # Check if the username already exists in the leaderboard table
+    c.execute("SELECT * FROM leaderboard WHERE username = ?", (username,))
+    existing_user = c.fetchone()
+
+    if existing_user:
+        # If the username exists, update the amount won
+        updated_amount_won = existing_user[1] + amount_won
+        c.execute("UPDATE leaderboard SET amount_won = ? WHERE username = ?", (updated_amount_won, username))
+    else:
+        # If the username doesn't exist, insert a new row
+        c.execute("INSERT INTO leaderboard (username, amount_won, category_played) VALUES (?, ?, ?)", (username,category_played, amount_won, ))
+
+    conn.commit()
+    conn.close()
+
+
+
+
+
+def complete_category(username, category_played):
+    # Call this function when a user completes a category
+    update_leaderboard(username, 1000000, category_played)  # Update the leaderboard for the logged-in user
+
+def show_leaderboard():
+    leaderboard_window = tk.Toplevel()
+    leaderboard_window.title("Leaderboard")
+    leaderboard_window.geometry("1430x1430")
+
+    # Create a frame that spans the entire window with a green background
+    frame = tk.Frame(leaderboard_window, bg="green")
+    frame.place(relx=0, rely=0, relwidth=1, relheight=1)
+
+    # Retrieve leaderboard data from the database
+    conn = sqlite3.connect("users.db")
+    c = conn.cursor()
+    c.execute("SELECT username, category_played, amount_won FROM leaderboard ORDER BY amount_won DESC")
+    leaderboard_data = c.fetchall()
+    conn.close()
+
+    # Create a table to display leaderboard data
+    table = ttk.Treeview(frame, columns=("Username", "Category Played", "Amount Won"))
+    table.heading("#0", text="Rank")
+    table.heading("Username", text="Username")
+    table.heading("Amount Won", text="Amount Won")
+    table.heading("Category Played", text="Category Played")
+   
+    for i, (username, category_played, amount_won, ) in enumerate(leaderboard_data, start=1):
+        table.insert("", "end", text=str(i), values=(username, category_played, amount_won , ))
+
+    table.pack(expand=True, fill="both")
+
+
+"""
+
+def delete_records():
+    conn = sqlite3.connect("users.db")
+    c = conn.cursor()
+
+    # Delete records based on a condition (example: delete all records with amount_won less than 1000)
+    c.execute("DELETE FROM leaderboard WHERE amount_won < ?", (10000000,))
+
+    # Alternatively, you can delete all records from the table
+    # c.execute("DELETE FROM leaderboard")
+
+    conn.commit()
+    conn.close()
+
+# Call the delete_records function to delete records from the leaderboard table
+delete_records()
+
+"""
 
 def register():
     username = username_entry.get()
@@ -89,6 +180,8 @@ def register():
         messagebox.showerror("Error", "Failed to register user.")
 
 category_window = None  
+
+
 def logout():
     global category_window
     if category_window:
@@ -103,7 +196,6 @@ def exit_game():
 
 
 
-
 def login():
     username = username_entry.get()
     password = password_entry.get()
@@ -113,78 +205,17 @@ def login():
     if authenticate_user(username, password):
         messagebox.showinfo("Success", "Login successful.")
         root.destroy()  # Destroy the login window
+        update_leaderboard(username, "category_played", 100000)  # Adjust this line with the actual category played
         show_category_selection()  # Show category selection window
     else:
         messagebox.showerror("Error", "Invalid username or password.")
 
 
+
+
+
 #def forgot_password():
     #messagebox.showinfo("Forgot Password", "Please contact support for assistance.")
-"""
-# Function to reset password
-def reset_password():
-    # Prompt the user to enter their username
-    username = simpledialog.askstring("Forgot Password", "Enter your username:")
-    if not username:
-        # If the user cancels or closes the dialog, return without resetting the password
-        return
-
-    # Connect to the database
-    conn = sqlite3.connect('users.db')
-    c = conn.cursor()
-
-    # Check if the username exists in the database
-    c.execute("SELECT * FROM users WHERE username = ?", (username,))
-    user = c.fetchone()
-
-    if user:
-        # Create a new Toplevel window for password reset
-        password_window = tk.Toplevel()
-        password_window.title("Reset Password")
-        
-        # Calculate the position to center the password reset window relative to the main login window
-        window_width = 300
-        window_height = 150
-        screen_width = password_window.winfo_screenwidth()
-        screen_height = password_window.winfo_screenheight()
-        x = (screen_width - window_width) // 2
-        y = (screen_height - window_height) // 2
-        password_window.geometry(f"{window_width}x{window_height}+{x}+{y}")
-
-        # Prompt the user to enter a new password
-        new_password_label = ttk.Label(password_window, text="Enter your new password:")
-        new_password_label.pack(pady=5)
-
-        new_password_entry = ttk.Entry(password_window, show="*")
-        new_password_entry.pack(pady=5)
-
-        # Function to update the password in the database
-        def update_password():
-            new_password = new_password_entry.get()
-
-       # Check if the new password meets the validation requirements
-            if len(new_password) < 6 or not new_password.isalnum():
-                messagebox.showerror("Error", "Password must be alphanumeric and at least 6 characters long.")
-                return
-
-
-            if new_password:
-                # Update the password in the database
-                c.execute("UPDATE users SET password = ? WHERE username = ?", (new_password, username))
-                conn.commit()
-                conn.close()
-                messagebox.showinfo("Password Reset", "Your password has been reset successfully.")
-                password_window.destroy()
-            else:
-                messagebox.showerror("Error", "Please enter a new password.")
-
-        update_button = ttk.Button(password_window, text="Update Password", command=update_password)
-        update_button.pack(pady=5)
-    else:
-        # If the username does not exist, display an error message
-        messagebox.showerror("Error", "Username not found.")
-        conn.close()
-"""
 
 def reset_password():
     # Prompt the user to enter their username
@@ -268,53 +299,14 @@ def show_password():
     else:
         password_entry.config(show="*")
 
-def update_leaderboard(username, category):
+
+def create_leaderboard_table():
     conn = sqlite3.connect("users.db")
     c = conn.cursor()
-    c.execute("INSERT INTO leaderboard (username, category, amount_won) VALUES (?, ?, ?)", (username, category, 100000))
+    c.execute('''CREATE TABLE IF NOT EXISTS leaderboard
+                 (username TEXT, category_played TEXT, amount_won REAL)''')
     conn.commit()
     conn.close()
-
-def show_leaderboard(root):
-    leaderboard_window = tk.Toplevel(root)
-    leaderboard_window.title("Leaderboard")
-    leaderboard_window.geometry("1430x1430")
-
-    # Create a frame that spans the entire window with a green background
-    frame = tk.Frame(leaderboard_window, bg="green")
-    frame.place(relx=0, rely=0, relwidth=1, relheight=1)
-
-    # Retrieve leaderboard data from the database
-    conn = sqlite3.connect("users.db")
-    c = conn.cursor()
-    c.execute("SELECT * FROM leaderboard ORDER BY amount_won DESC")
-    leaderboard_data = c.fetchall()
-    conn.close()
-
-    # Create a table to display leaderboard data
-    table = ttk.Treeview(frame, columns=("Username", "Category", "Amount Won"))
-    table.heading("#0", text="Rank")
-    table.heading("Username", text="Username")
-    table.heading("Category", text="Category")
-    table.heading("Amount Won", text="Amount Won")
-    for i, (username, category, amount_won) in enumerate(leaderboard_data, start=1):
-        table.insert("", "end", text=str(i), values=(username, category, amount_won))
-
-    table.pack(expand=True, fill="both")
-
-    leaderboard_window.mainloop()
-  # Assuming you have already created a Tkinter root instance named 'root'
-  # Create a Tkinter root instance
-    root = tk.Tk()
-
-        # Call the show_leaderboard() function passing the root instance
-    show_leaderboard(root)
-
-  # Run the Tkinter event loop
-
-
-
-
 
 
 
@@ -332,19 +324,27 @@ def show_category_selection():
     img_label.pack()
 
         # Create a button to show the leaderboard
-    leaderboard_button = tk.Button(category_window, text="Leaderboard", command=show_leaderboard)
+    #leaderboard_button = tk.Button(category_window, text="Leaderboard", command=show_leaderboard)
+    #eaderboard_button.pack(pady=(20, 5))
+
+        # Create the leaderboard button
+    leaderboard_button = Button(category_window, text="Leaderboard", font=("arial",10,"bold"), bg="green", fg="yellow", bd=0, activebackground="blue", activeforeground='black', cursor="hand2", wraplength=130, command=show_leaderboard)
     leaderboard_button.pack(pady=(20, 5))
+
 
 
 
 
     categories = ["GENERAL KNOWLEDGE", "GEOGRAPHY", "HISTORY", "LITERATURE", "MUSIC", "POP CULTURE", "SPORT", "COMPUTER SCIENCE", "RIDDLES", "SCIENCE AND TECHNOLOGY"]
 
+
     def start_game_with_category(category):
         global category_window
         category_window.destroy() 
-        main_game(category)
-    
+        score = main_game(category)
+        if score == 15:  # Assuming the score is 15 when the user completes the category
+            complete_category(category)
+
 
     category_frame = ttk.Frame(category_window)
     category_frame.pack()
@@ -383,6 +383,10 @@ def show_category_selection():
 
 
     category_window.mainloop()
+
+
+
+
 
 
 """
@@ -558,7 +562,7 @@ def main_game(category):
                         optionButton2.config(text=Second_options[0])
                         optionButton3.config(text=Third_options[0])
                         optionButton4.config(text=Fourth_options[0])
-                        amountLabel.config(image=amountImages)
+                        #amountLabel.config(image=amountImages)
 
                 # load_new_questions()
 
@@ -571,6 +575,8 @@ def main_game(category):
                     root2.title("You won 100,000,000 pounds")
                     imgLabel=Label(root2,image=centerImage,bd=0)
                     imgLabel.pack(pady=30)
+
+
 
                     
                     winLabel=Label(root2, text="You Won",font=("arial", 40, "bold",), bg='black', fg="white")
@@ -626,6 +632,8 @@ def main_game(category):
                 root1.title("You won 0 pounds")
                 imgLabel=Label(root1,image=centerImage,bd=0)
                 imgLabel.pack(pady=30)
+
+
 
                 loseLabel=Label(root1, text="You lose",font=("arial", 40, "bold",), bg='black', fg="white")
                 loseLabel.pack()
@@ -1046,9 +1054,6 @@ def main_game(category):
             "Neville Chamberlain",
             "Marco Polo Route"
         ]
-
-    
-
             #LITERATURE
 
     
@@ -1202,7 +1207,7 @@ def main_game(category):
 
           First_options = [
             "Prince",
-            "Beethoven",
+            "Beethos",
             "The Rolling Stones",
             "Elvis Presley",
             "Pink Flop",
@@ -1210,26 +1215,26 @@ def main_game(category):
             "J.S. Bach",
             "Macdonald",
             "Mozar",
-            "The Beatles",
-            "Johnny Cash",
+            "The Bales",
+            "John Cash",
             "Adef",
-            "The Beatles",
+            "The Beat",
             "Marvin Gaye",
             "Rihanna"
         ]
 
           Second_options = [
-            "Elvis Presley",
+            "Elv Presle",
             "Bechez", 
             "The Beatles",
             "Bob Dylan",
-            "Taylor Swift",
-            "Beyoncé",
+            "Taylor Swiss",
+            "Bestert",
             "Beethoven",
             "Madonna",
             "Thovan",
-            "Ned Seppelin",
             "Queen",
+            "Ned Seppelin",
             "Taylor Swift",
             "Pink Floyd",
             "Stevie Wonder",
@@ -1255,7 +1260,7 @@ def main_game(category):
         ]
 
           Fourth_options = [
-            "Stevie Wonder",
+            "Stevie Wood",
             "Beethos",
             "The Beles",
             "Elton John",
@@ -1264,7 +1269,7 @@ def main_game(category):
             "Frederic Chopin",
             "Celine Dion",
             "Brahms",
-            "Pink Floyd",
+            "Pire Floy",
             "David Bowie", 
             "Katy Perry",
             "Ledo Zeppelins",
@@ -1833,6 +1838,19 @@ def main_game(category):
         messagebox.showerror("Invalid Category", "Please select a valid category.")
         return
       
+        # Shuffle the questions, options, and correct answers together
+    #questions_and_options = list(zip(question, First_options, Second_options, Third_options, Fourth_options, correct_answers))
+    #random.shuffle(questions_and_options)
+
+    # Unpack the shuffled values
+    #question, First_options, Second_options, Third_options, Fourth_options, correct_answers = zip(*questions_and_options)
+
+    # Now your data is shuffled and ready to use in your game
+
+    # Shuffle the lifelines
+    #lifelines = [lifeline50, audiencePoleLifeLine, phoneLifeLine]
+    #random.shuffle(lifelines)
+
 
 
 
@@ -2016,16 +2034,6 @@ def main_game(category):
     exit_button.grid(row=2, column=4, sticky="ne")  
     #exit_button.place(x=50, y=50)
 
-    
-
-
-
-
-
-
-
-
-
     root.mainloop()
 
 
@@ -2033,6 +2041,6 @@ create_login_window()
 
 
 
-#main_game("GENERAL KNOWLEDGE")
+
 
 

@@ -475,6 +475,9 @@ def main_game(category):
     mixer.music.load("kbc.mp3")
     mixer.music.play(-1)  
 
+
+
+
     def select(event):
         callButtton.place_forget()
         progressBarA.place_forget()
