@@ -14,7 +14,7 @@ import sqlite3
 import re
 from tkinter import Tk, Entry, Label, Button, messagebox
 from tkinter import PhotoImage
-
+import time
 
 #create database
 
@@ -386,71 +386,6 @@ def show_category_selection():
 
 
 
-
-
-
-"""
-def start_timer(category):
-    timer_decision_window = tk.Toplevel()  # Create a new window for timer decision
-    timer_decision_window.title("Timer Decision")
-    timer_decision_window.geometry("300x150")
-
-    decision_label = ttk.Label(timer_decision_window, text="Do you want to enable the timer?")
-    decision_label.pack(pady=10)
-
-    def start_with_timer():
-        timer_decision_window.destroy()  # Close the decision window
-        start_timer_window(category)
-
-    def start_without_timer():
-        timer_decision_window.destroy()  # Close the decision window
-        #start_quiz(category, enable_timer=False)  # Start the quiz without a timer
-        
-       
-
-    timer_button_frame = ttk.Frame(timer_decision_window)
-    timer_button_frame.pack(pady=10)
-
-    timer_button = ttk.Button(timer_button_frame, text="Start with Timer", command=start_with_timer)
-    timer_button.grid(row=0, column=0, padx=10)
-
-    no_timer_button = ttk.Button(timer_button_frame, text="Continue without Timer", command=start_without_timer)
-    no_timer_button.grid(row=0, column=1, padx=10)
-
-def start_timer_window(category):
-    timer_window = tk.Toplevel()  # Use Toplevel instead of Tk
-    timer_window.title("Timer")
-    timer_window.geometry("300x200")
-
-    img = tk.PhotoImage(file="timerr.png")
-    img_label = tk.Label(timer_window, image=img)
-    img_label.pack()
-
-    countdown_label = ttk.Label(timer_window, text="Time Left:")
-    countdown_label.pack()
-
-    countdown_var = tk.StringVar()
-    countdown_display = ttk.Label(timer_window, textvariable=countdown_var)
-    countdown_display.pack()
-
-    # Timer countdown functionality
-    def countdown(seconds):
-        if seconds > 0:
-            countdown_var.set(seconds)
-            timer_window.after(1000, countdown, seconds - 1)  # Schedule the next call after 1000ms (1 second)
-        else:
-            countdown_var.set("Time's up!")
-            try_again_button = ttk.Button(timer_window, text="Try Again", command=timer_window.destroy)
-            try_again_button.pack(pady=5)
-
-            # Call the appropriate quiz function based on the selected category
-            start_quiz(category)
-           
-
-    countdown(60)  # Start the countdown from 60 seconds
-
-    timer_window.mainloop()
-"""
 
 
 def create_login_window():
@@ -2010,14 +1945,21 @@ def main_game(category):
         # Optionally, you can also return to the category selection window
             show_category_selection()
 
-    #exit with music still playing
-    #def exit_game():
-        #if messagebox.askokcancel("Exit", "Are you sure you want to exit the game?"):
-            #root.destroy()
-            # Optionally, you can also return to the category selection window
-            #show_category_selection()
 
-
+    
+    def start_timer(duration):
+        while duration:
+            mins, secs = divmod(duration, 20)
+            timeformat = '{:02d}:{:02d}'.format(mins, secs)
+            timer_label.config(text=timeformat)
+            root.update()
+            time.sleep(1)
+            duration -= 1
+        messagebox.showinfo("Time's up", "Time is up, returning to category selection.")
+        mixer.music.stop()
+        root.destroy()
+        # Optionally, you can also return to the category selection window
+        show_category_selection()
 
 
 
@@ -2026,18 +1968,28 @@ def main_game(category):
     root.style = ttk.Style()
     root.style.configure(".", background="red", foreground="black")
 
-    # Create the exit button with the default style
-    #exit_button = ttk.Button(root, text="Exit", command=exit_game)
-    #exit_button.grid(row=0, column=1, sticky="ne")  
 
     exit_button = Button(root, text="Exit", bg="red", fg="white",bd=0,activebackground="red",activeforeground='white',cursor="hand2",wraplength=130, command=exit_game)
     exit_button.grid(row=2, column=4, sticky="ne")  
-    #exit_button.place(x=50, y=50)
+
+    # Create a label to display the timer
+    timer_label = ttk.Label(root, text="00:00", font=("Arial", 16), background="red", foreground="white")
+    timer_label.grid(row=0, column=0, padx=10, pady=10)
+
+    # Create a button to start the timer
+    start_button = Button(root, text="Start Timer", bg="green", fg="white", bd=0, activebackground="green", activeforeground='white', cursor="hand2", command=lambda: start_timer(20))
+    start_button.grid(row=1, column=0, padx=10, pady=10)
+
 
     root.mainloop()
 
 
 create_login_window()
+
+
+
+
+
 
 
 
