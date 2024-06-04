@@ -39,12 +39,12 @@ This is a trivia game application inspired by the popular TV show "Who Wants to 
 3. Run the game:
 
     ```bash
-    python main.py
+    python app.py
     ```
 
 ## Usage
 
-1. Launch the game by running `main.py`.
+1. Launch the game by running `app.py`.
 2. Register for a new account or log in with existing credentials.
 3. Choose a game category from the provided options.
 4. Answer multiple-choice questions and use lifelines when necessary.
@@ -52,9 +52,8 @@ This is a trivia game application inspired by the popular TV show "Who Wants to 
 
 ## Contributors
 
-- Your Name
-- Contributor 2
-- Contributor 3
+- TERRY IWUJI
+
 
 ## License
 
