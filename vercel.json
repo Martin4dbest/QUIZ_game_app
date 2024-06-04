@@ -2,7 +2,6 @@
     "version": 2,
     "name": "QUIZ_game_app",
     "framework": "python",
-    "rootDirectory": "./",
     "builds": [
       {
         "src": "(app3.py)",
