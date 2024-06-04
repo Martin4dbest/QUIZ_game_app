@@ -14,6 +14,7 @@ import sqlite3
 import re
 from tkinter import Tk, Entry, Label, Button, messagebox
 from tkinter import PhotoImage
+import tkinter.simpledialog as simpledialog
 import time
 
 #create database
@@ -79,7 +80,7 @@ def create_leaderboard_table():
     c = conn.cursor()
     c.execute('''DROP TABLE IF EXISTS leaderboard''')  # Drop the existing table if it exists
     c.execute('''CREATE TABLE IF NOT EXISTS leaderboard
-                 (username TEXT PRIMARY KEY, amount_won REAL, category_played TEXT)''')  # Recreate the table with the updated schema
+                 (username TEXT , amount_won REAL, category_played TEXT)''')  # Recreate the table with the updated schema
     conn.commit()
     conn.close()
 
@@ -100,7 +101,8 @@ def update_leaderboard(username, amount_won, category_played):
         c.execute("UPDATE leaderboard SET amount_won = ? WHERE username = ?", (updated_amount_won, username))
     else:
         # If the username doesn't exist, insert a new row
-        c.execute("INSERT INTO leaderboard (username, amount_won, category_played) VALUES (?, ?, ?)", (username,category_played, amount_won, ))
+        #c.execute("INSERT INTO leaderboard (username, amount_won, category_played) VALUES (?, ?, ?)", (username,category_played, amount_won, ))
+        c.execute("INSERT INTO leaderboard (username, amount_won, category_played) VALUES (?, ?, ?)", (username, amount_won, category_played))
 
     conn.commit()
     conn.close()
@@ -111,16 +113,29 @@ def update_leaderboard(username, amount_won, category_played):
 
 def complete_category(username, category_played):
     # Call this function when a user completes a category
-    update_leaderboard(username, 1000000, category_played)  # Update the leaderboard for the logged-in user
+    update_leaderboard(username, 100000000, category_played)  # Update the leaderboard for the logged-in user
+
+
 
 def show_leaderboard():
     leaderboard_window = tk.Toplevel()
     leaderboard_window.title("Leaderboard")
     leaderboard_window.geometry("1430x1430")
 
-    # Create a frame that spans the entire window with a green background
-    frame = tk.Frame(leaderboard_window, bg="green")
-    frame.place(relx=0, rely=0, relwidth=1, relheight=1)
+    
+    #frame = tk.Frame(leaderboard_window, bg="green")
+    #frame.place(relx=0, rely=0, relwidth=1, relheight=1)
+
+        # Create a frame with a colored background
+    background_frame = tk.Frame(leaderboard_window, bg="green")
+    background_frame.pack(fill="both", expand=True)
+
+    # Create a frame to contain the leaderboard table
+    frame = tk.Frame(background_frame, bg="lightyellow", width=1000, height=800)
+    frame.place(relx=0.5, rely=0.5, anchor="center")
+
+    frame.config(width=1200, height=900) 
+
 
     # Retrieve leaderboard data from the database
     conn = sqlite3.connect("users.db")
@@ -132,14 +147,15 @@ def show_leaderboard():
     # Create a table to display leaderboard data
     table = ttk.Treeview(frame, columns=("Username", "Category Played", "Amount Won"))
     table.heading("#0", text="Rank")
-    table.heading("Username", text="Username")
+    table.heading("Username", text="THE CHAMPIONS")
     table.heading("Amount Won", text="Amount Won")
-    table.heading("Category Played", text="Category Played")
+    table.heading("Category Played", text="Category Played")  # Fixed typo here
    
-    for i, (username, category_played, amount_won, ) in enumerate(leaderboard_data, start=1):
-        table.insert("", "end", text=str(i), values=(username, category_played, amount_won , ))
+    for i, (username, category_played, amount_won) in enumerate(leaderboard_data, start=1):
+        table.insert("", "end", text=str(i), values=(username, category_played, amount_won))
 
     table.pack(expand=True, fill="both")
+
 
 
 """
@@ -203,12 +219,13 @@ def login():
         messagebox.showerror("Error", "Please enter a username and password.")
         return
     if authenticate_user(username, password):
-        messagebox.showinfo("Success", "Login successful.")
+        messagebox.showinfo("Success", "Login successful!")
         root.destroy()  # Destroy the login window
-        update_leaderboard(username, "category_played", 100000)  # Adjust this line with the actual category played
-        show_category_selection()  # Show category selection window
+        #update_leaderboard(username, "category_played", 100)  # Adjust this line with the actual category played
+        show_category_selection(username)  # Show category selection window
     else:
         messagebox.showerror("Error", "Invalid username or password.")
+
 
 
 
@@ -269,7 +286,9 @@ def reset_password():
                 # Check if the new password meets the validation requirements
                 if len(new_password) < 6 or not new_password.isalnum():
                     messagebox.showerror("Error", "Password must be alphanumeric and at least 6 characters long.")
+                    password_window.destroy()
                     return
+                
                 
                 # Update the password in the database
                 c.execute("UPDATE users SET password = ? WHERE username = ?", (new_password, username))
@@ -312,7 +331,7 @@ def create_leaderboard_table():
 
 
 
-def show_category_selection():
+def show_category_selection(username):
     global category_window
     category_window = tk.Tk()
     category_window.title("Category Selection")
@@ -338,10 +357,10 @@ def show_category_selection():
     categories = ["GENERAL KNOWLEDGE", "GEOGRAPHY", "HISTORY", "LITERATURE", "MUSIC", "POP CULTURE", "SPORT", "COMPUTER SCIENCE", "RIDDLES", "SCIENCE AND TECHNOLOGY"]
 
 
-    def start_game_with_category(category):
+    def start_game_with_category(category, username):
         global category_window
         category_window.destroy() 
-        score = main_game(category)
+        score = main_game(category, username)
         if score == 15:  # Assuming the score is 15 when the user completes the category
             complete_category(category)
 
@@ -353,7 +372,7 @@ def show_category_selection():
     
     for category in categories:
         #button = ttk.Button(category_frame, text=category, command=lambda cat=category: start_game_with_category(cat))
-        button =Button(category_frame, text=category, font=("arial",10,"bold"),bg="green", fg="yellow",bd=0,activebackground="blue",activeforeground='black',cursor="hand2",wraplength=130,command=lambda cat=category: start_game_with_category(cat))
+        button =Button(category_frame, text=category, font=("arial",10,"bold"),bg="green", fg="yellow",bd=0,activebackground="blue",activeforeground='black',cursor="hand2",wraplength=130,command=lambda cat=category: start_game_with_category(cat, username))
 
         button.pack(side=tk.LEFT, padx=5, pady=5, ipadx=10, ipady=5)  # Adjust internal padding
        
@@ -450,14 +469,12 @@ def create_login_window():
     root.mainloop()
 
 
-def main_game(category):
+def main_game(category, username):
     # Initialize pyttsx3 engine
     engine = pyttsx3.init()
     voices = engine.getProperty('voices')
     engine.setProperty("voice", voices[0].id)
 
-    
-    # Call show_leaderboard function passing root as argument
     
 
     # Initialize mixer and play background music
@@ -499,6 +516,16 @@ def main_game(category):
                         optionButton4.config(text=Fourth_options[0])
                         #amountLabel.config(image=amountImages)
 
+                        entered_category = simpledialog.askstring("Input", " INPUT CATEGORY PLAYED AND CHECK LEADERBOARD:")
+                        if entered_category:
+                            amount_won = 100000000  # Placeholder, replace with actual score data
+                            conn = sqlite3.connect("users.db")
+                            c = conn.cursor()
+                            c.execute("INSERT INTO leaderboard (username, category_played, amount_won) VALUES (?, ?, ?)",
+                                      (username, entered_category, amount_won))
+                            conn.commit()
+                            conn.close()
+
                 # load_new_questions()
 
                     mixer.music.stop()
@@ -510,6 +537,13 @@ def main_game(category):
                     root2.title("You won 100,000,000 pounds")
                     imgLabel=Label(root2,image=centerImage,bd=0)
                     imgLabel.pack(pady=30)
+                    
+                    tryAgainButton = Button(root2, text="Congratulation! Enter the Category played!!", command=playagain)
+                    tryAgainButton.pack()
+
+
+
+
 
 
 
@@ -587,6 +621,13 @@ def main_game(category):
                 sadLabel1.place(x=400,y=280)
                 root1.mainloop()
                 break
+
+
+    
+
+
+
+
     def lifeline50():
         lifeline50Button.config(image=image50X,state=DISABLED)
         if questionArea.get(1.0,"end-1c")==question[0]:
@@ -1772,7 +1813,8 @@ def main_game(category):
     else:
         messagebox.showerror("Invalid Category", "Please select a valid category.")
         return
-      
+
+   
         # Shuffle the questions, options, and correct answers together
     #questions_and_options = list(zip(question, First_options, Second_options, Third_options, Fourth_options, correct_answers))
     #random.shuffle(questions_and_options)
@@ -1943,13 +1985,13 @@ def main_game(category):
             mixer.music.stop()
             root.destroy()
         # Optionally, you can also return to the category selection window
-            show_category_selection()
+            show_category_selection(username)
 
 
     
     def start_timer(duration):
         while duration:
-            mins, secs = divmod(duration, 20)
+            mins, secs = divmod(duration, 60)
             timeformat = '{:02d}:{:02d}'.format(mins, secs)
             timer_label.config(text=timeformat)
             root.update()
@@ -1959,7 +2001,7 @@ def main_game(category):
         mixer.music.stop()
         root.destroy()
         # Optionally, you can also return to the category selection window
-        show_category_selection()
+        show_category_selection(username)
 
 
 
@@ -1969,23 +2011,43 @@ def main_game(category):
     root.style.configure(".", background="red", foreground="black")
 
 
-    exit_button = Button(root, text="Exit", bg="red", fg="white",bd=0,activebackground="red",activeforeground='white',cursor="hand2",wraplength=130, command=exit_game)
+
+    exit_button = Button(root, text="Exit", bg="red", fg="white",bd=0,activebackground="red",activeforeground='white',cursor="hand2",wraplength=190, command=exit_game)
     exit_button.grid(row=2, column=4, sticky="ne")  
 
+   
+
+ 
     # Create a label to display the timer
     timer_label = ttk.Label(root, text="00:00", font=("Arial", 16), background="red", foreground="white")
     timer_label.grid(row=0, column=0, padx=10, pady=10)
 
     # Create a button to start the timer
-    start_button = Button(root, text="Start Timer", bg="green", fg="white", bd=0, activebackground="green", activeforeground='white', cursor="hand2", command=lambda: start_timer(20))
-    start_button.grid(row=1, column=0, padx=10, pady=10)
+    #start_button = Button(root, text="Start Timer", bg="green", fg="white", bd=0, activebackground="green", activeforeground='white', cursor="hand2", command=lambda: start_timer(40))
+    #start_button.grid(row=1, column=0, padx=10, pady=10)
+
+
+    start_button=Button(root, text="Start Timer", font=("arial",10,"bold"),bg="green", fg="white",bd=0,activebackground="red",activeforeground='white',cursor="hand2",wraplength=130, command=lambda: start_timer(60))
+    start_button.grid(row=1, column=0, padx=14, pady=14)
+
+
+    
+
+
+
+
+    
+
+
+
+ 
+
 
 
     root.mainloop()
 
 
 create_login_window()
-
 
 
 

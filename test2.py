@@ -14,6 +14,7 @@ import sqlite3
 import re
 from tkinter import Tk, Entry, Label, Button, messagebox
 from tkinter import PhotoImage
+import tkinter.simpledialog as simpledialog
 import time
 
 #create database
@@ -134,12 +135,13 @@ def show_leaderboard():
     table.heading("#0", text="Rank")
     table.heading("Username", text="Username")
     table.heading("Amount Won", text="Amount Won")
-    table.heading("Category Played", text="Category Played")
+    table.heading("Category Played", text="Category Played")  # Fixed typo here
    
-    for i, (username, category_played, amount_won, ) in enumerate(leaderboard_data, start=1):
-        table.insert("", "end", text=str(i), values=(username, category_played, amount_won , ))
+    for i, (username, category_played, amount_won) in enumerate(leaderboard_data, start=1):
+        table.insert("", "end", text=str(i), values=(username, category_played, amount_won))
 
     table.pack(expand=True, fill="both")
+
 
 
 """
@@ -512,6 +514,36 @@ def main_game(category):
                     root2.title("You won 100,000,000 pounds")
                     imgLabel=Label(root2,image=centerImage,bd=0)
                     imgLabel.pack(pady=30)
+                    
+
+
+
+                    def on_closing():
+                        entered_category = simpledialog.askstring("Input", "Enter the category you played:", parent=root2)
+                        if entered_category:
+                            # Assuming you also need to capture and store the username and score
+                            username = "User"  # Placeholder, replace with actual user data
+                            amount_won = 100  # Placeholder, replace with actual score data
+                            # Save to database
+                            conn = sqlite3.connect("users.db")
+                            c = conn.cursor()
+                            # Ensure your table schema includes these columns: username, category_played, amount_won
+                            c.execute("INSERT INTO leaderboard (username, category_played, amount_won) VALUES (?, ?, ?)", 
+                                    (username, entered_category, amount_won))
+                            conn.commit()
+                            conn.close()
+
+                        root2.destroy()
+
+                    root2.protocol("WM_DELETE_WINDOW", on_closing)
+
+
+
+
+                    
+
+
+
 
 
 
@@ -589,6 +621,54 @@ def main_game(category):
                 sadLabel1.place(x=400,y=280)
                 root1.mainloop()
                 break
+
+        # Function to handle game over scenario
+    def game_over(final_score):
+        root1 = Toplevel()
+        root1.config(bg="black")
+        root1.geometry("500x400+140+30")
+        root1.title("Game Over")
+        imgLabel = Label(root1, image=centerImage, bd=0)
+        imgLabel.pack(pady=30)
+
+        loseLabel = Label(root1, text=f"You scored: {final_score} pounds", font=("arial", 40, "bold"), bg='black', fg="white")
+        loseLabel.pack()
+
+        def try_again():
+            lifeline50Button.config(state=NORMAL, image=image50)
+            audiencePoleButton.config(state=NORMAL, image=audiencePole)
+            phoneLifeLineButton.config(state=NORMAL, image=phoneImage)
+            root1.destroy()
+            # Reset the game here
+
+        tryagainButton = Button(root1, text="Try Again", font=("arial", 20, "bold"), bg="black", fg="white",
+                                activebackground="black", activeforeground="white", bd=0, cursor="hand2",
+                                command=try_again)
+        tryagainButton.pack()
+
+        def close():
+            root1.destroy()
+            root.destroy()
+
+        closeButton = Button(root1, text="Close", font=("arial", 20, "bold"), bg="black", fg="white",
+                             activebackground="black", activeforeground="white", bd=0, cursor="hand2", command=close)
+        closeButton.pack()
+
+        sadimage = PhotoImage(file="sad.png")
+        sadLabel = Label(root1, image=sadimage, bg="black")
+        sadLabel.place(x=30, y=280)
+
+        sadLabel1 = Label(root1, image=sadimage, bg="black")
+        sadLabel1.place(x=400, y=280)
+        root1.mainloop()
+
+
+
+    
+
+
+
+
     def lifeline50():
         lifeline50Button.config(image=image50X,state=DISABLED)
         if questionArea.get(1.0,"end-1c")==question[0]:
@@ -1774,7 +1854,8 @@ def main_game(category):
     else:
         messagebox.showerror("Invalid Category", "Please select a valid category.")
         return
-      
+
+   
         # Shuffle the questions, options, and correct answers together
     #questions_and_options = list(zip(question, First_options, Second_options, Third_options, Fourth_options, correct_answers))
     #random.shuffle(questions_and_options)
